@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kontak - OH SNAP! Photobox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('ohsnap_cms_data'));
+                if (saved && saved.colors) {
+                    const r = document.documentElement.style;
+                    if (saved.colors.primary) r.setProperty('--primary', saved.colors.primary);
+                    if (saved.colors.secondary) r.setProperty('--secondary', saved.colors.secondary);
+                    if (saved.colors.bg) r.setProperty('--bg-main', saved.colors.bg);
+                    if (saved.colors.footer) r.setProperty('--footer-bg', saved.colors.footer);
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <style>
+        :root { --primary: #ff1493; --secondary: #2b4c7e; --bg-main: #fff0f5; --footer-bg: #18171d; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg-main); color: var(--secondary); line-height: 1.6; overflow-x: hidden; }
+        header { display: flex; justify-content: space-between; align-items: center; height: 85px; padding: 0 4%; background: var(--primary); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); }
+        .logo-container { display: flex; align-items: center; gap: 12px; text-decoration: none; z-index: 1001; }
+        .brand-logo-img { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; border: 2px solid #ffffff; }
+        .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: 2px; color: #ffffff; }
+        .logo span { color: #ffe4e6; }
+        .nav-container { display: flex; align-items: center; gap: 25px; }
+        .nav-menu { display: flex; align-items: center; gap: 24px; }
+        .nav-menu a { color: #ffffff; text-decoration: none; font-size: 1rem; font-weight: 500; opacity: 0.9; }
+        .nav-menu a:hover, .nav-menu a.active { opacity: 1; font-weight: 700; }
+        .lang-switcher { display: flex; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 50px; padding: 2px; }
+        .lang-btn { background: transparent; border: none; color: #ffffff; padding: 6px 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border-radius: 50px; }
+        .lang-btn.active { background: #ffffff; color: var(--primary); }
+        .menu-toggle { display: none; flex-direction: column; justify-content: space-between; width: 28px; height: 21px; background: transparent; border: none; cursor: pointer; z-index: 1001; }
+        .menu-toggle span { display: block; width: 100%; height: 3px; background-color: #ffffff; border-radius: 2px; }
+
+        .contact-container { max-width: 900px; margin: 0 auto; padding: 70px 8% 60px; }
+        .section-title { font-size: 2.5rem; font-weight: 800; margin-bottom: 30px; color: var(--secondary); text-align: center; }
+        .section-title span { color: var(--primary); }
+        .contact-card-wrapper { background: #ffffff; border: 1px solid #fbcfe8; border-radius: 24px; padding: 45px; box-shadow: 0 10px 30px rgba(255, 182, 193, 0.2); }
+        .contact-inner-box { background: var(--bg-main); border-radius: 18px; padding: 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 30px; border: 1px solid #fbcfe8; }
+        .cs-info h3 { font-size: 1.2rem; font-weight: 700; color: var(--secondary); margin-bottom: 8px; }
+        .cs-info p { color: #4b5563; font-size: 0.95rem; }
+        .social-buttons { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 380px; }
+        .social-btn { display: flex; align-items: center; gap: 14px; background: #ffffff; color: var(--secondary); padding: 14px 20px; border-radius: 14px; border: 1px solid #fbcfe8; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: 0.3s; word-break: break-word; }
+        .social-btn:hover { background: var(--primary); color: #ffffff; border-color: var(--primary); transform: translateY(-2px); }
+        .social-btn svg { width: 22px; height: 22px; fill: currentColor; flex-shrink: 0; }
+
+        footer { background-color: var(--footer-bg); color: #b5b5bc; padding: 60px 8% 30px; border-top: 2px solid #fbcfe8; margin-top: 60px; }
+        .footer-content { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: center; }
+        .footer-left h3 { color: #ffffff; font-size: 1.2rem; margin-bottom: 15px; }
+        .footer-left p, .footer-left address { font-style: normal; font-size: 0.95rem; line-height: 1.6; margin-bottom: 12px; color: #9ca3af; }
+        .footer-left a { color: var(--primary); text-decoration: none; }
+        .footer-helpdesk { margin-top: 16px; }
+        .footer-helpdesk h4 { color: #ffffff; font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+        .footer-helpdesk ul { list-style: none; padding: 0; }
+        .footer-helpdesk li { margin-bottom: 6px; font-size: 0.95rem; }
+        .footer-location-card { background: linear-gradient(145deg, #201f26 0%, #18171d 100%); border: 1px solid rgba(255, 20, 147, 0.3); border-radius: 20px; padding: 35px 30px; text-decoration: none; display: flex; flex-direction: column; align-items: center; text-align: center; transition: 0.35s; }
+        .footer-location-card:hover { border-color: var(--primary); transform: translateY(-5px); }
+        .footer-location-card h4 { color: #ffffff; font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; }
+        .footer-location-card p { color: #9ca3af; font-size: 0.95rem; margin-bottom: 22px; }
+        .location-btn-action { background: var(--primary); color: #ffffff; padding: 12px 28px; border-radius: 50px; font-weight: 700; font-size: 0.95rem; }
+        .footer-bottom { max-width: 1300px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.08); text-align: center; font-size: 0.85rem; color: #6b7280; }
+
+        @media screen and (max-width: 768px) {
+            .menu-toggle { display: flex; }
+            .nav-container { position: fixed; top: 0; left: -100%; width: 260px; height: 100vh; background-color: #ffffff; flex-direction: column; align-items: flex-start; padding: 90px 25px; transition: 0.3s; z-index: 999; border-right: 1px solid #fbcfe8; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
+            .nav-container.active { left: 0; }
+            .nav-menu { flex-direction: column; width: 100%; }
+            .nav-menu a { font-size: 1.05rem; padding: 14px 0; border-bottom: 1px solid #f3f4f6; width: 100%; color: var(--secondary); }
+            .lang-switcher { width: 100%; justify-content: center; background: #fdf2f8; border: 1px solid #fbcfe8; padding: 6px; }
+            .lang-btn { color: var(--secondary); width: 50%; text-align: center; }
+            .lang-btn.active { background: var(--primary); color: #ffffff; }
+            .contact-container { padding: 40px 5% 40px; }
+            .contact-card-wrapper { padding: 25px 20px; }
+            .contact-inner-box { flex-direction: column; align-items: stretch; padding: 22px 18px; }
+            .social-buttons { max-width: 100%; }
+            .section-title { font-size: 1.9rem; }
+            .footer-content { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo-container">
+            <img src="images/logo-icon.jpg" alt="OH SNAP! Logo" class="brand-logo-img" onerror="this.style.display='none'">
+            <span class="logo">OH SNAP<span>!</span></span>
+        </a>
+        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        <div class="nav-container" id="navContainer">
+            <nav class="nav-menu">
+                <a href="index.html" data-en="Home" data-id="Halaman">Halaman</a>
+                <a href="layanan.html" data-en="Services" data-id="Layanan">Layanan</a>
+                <a href="frame.html" data-en="Frame" data-id="Frame">Frame</a>
+                <a href="lokasi.html" data-en="Locations" data-id="Lokasi">Lokasi</a>
+                <a href="resend.html" data-en="Resend Softcopy" data-id="Resend Softcopy">Resend Softcopy</a>
+                <a href="kontak.html" class="active" data-en="Contact" data-id="Kontak">Kontak</a>
+            </nav>
+            <div class="lang-switcher">
+                <button class="lang-btn" id="btnEN" onclick="setLanguage('en')">EN</button>
+                <button class="lang-btn active" id="btnID" onclick="setLanguage('id')">ID</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="contact-container">
+        <h1 class="section-title" data-en="CONTACT <span>US</span>" data-id="KONTAK <span>KAMI</span>">KONTAK <span>KAMI</span></h1>
+        <div class="contact-card-wrapper">
+            <div class="contact-inner-box">
+                <div class="cs-info">
+                    <h3 data-en="CUSTOMER SERVICE" data-id="LAYANAN PELANGGAN">LAYANAN PELANGGAN</h3>
+                    <p data-en="Hi, Sobat Oh Snap! Is there anything we can help you with?" data-id="Hi, Sobat Oh Snap! Apa ada yang bisa kami bantu?">Hi, Sobat Oh Snap! Apa ada yang bisa kami bantu?</p>
+                </div>
+                <div class="social-buttons">
+                    <a href="https://www.instagram.com/ohsnap_photobox" target="_blank" class="social-btn">Instagram - @ohsnap_photobox</a>
+                    <a href="https://www.tiktok.com/@ohsnap_photobox" target="_blank" class="social-btn">TikTok - @ohsnap_photobox</a>
+                    <a id="contactEmailBtn" href="https://mail.google.com/mail/?view=cm&fs=1&to=photoboxohsnap.aplikasi@gmail.com" target="_blank" class="social-btn">Email - photoboxohsnap.aplikasi@gmail.com</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-left">
+                <h3 id="fBrand">OH SNAP! Photobox Group</h3>
+                <address><strong data-en="Branches:" data-id="Cabang:">Cabang:</strong> <span id="fBranches">Kediri Mall Lt.5, Plaza Cilacap Lt.3, Laksana Baru Lt.3, Plaza Pekalongan Lt.2, Yogya Pemalang Lt.3</span></address>
+                <p>Instagram: <a id="fIg" href="https://www.instagram.com/ohsnap_photobox" target="_blank">@ohsnap_photobox</a></p>
+                <p>TikTok: <a id="fTt" href="https://www.tiktok.com/@ohsnap_photobox" target="_blank">@ohsnap_photobox</a></p>
+                <div class="footer-helpdesk">
+                    <h4 data-en="Helpdesk" data-id="Bantuan">Helpdesk</h4>
+                    <ul>
+                        <li><a href="resend.html" data-en="Resend Softcopy" data-id="Kirim Ulang Softcopy">Resend Softcopy</a></li>
+                        <li><a href="login.html" data-en="Admin Login" data-id="Masuk Admin">Login Admin</a></li>
+                    </ul>
+                </div>
+            </div>
+            <a href="lokasi.html" class="footer-location-card">
+                <h4 id="fCardTitle">Find nearby OH SNAP! Studio</h4>
+                <p id="fCardDesc">Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!</p>
+                <div class="location-btn-action"><span data-en="📍 Find All Locations" data-id="📍 Temukan Semua Lokasi">📍 Temukan Semua Lokasi</span></div>
+            </a>
+        </div>
+        <div class="footer-bottom"><p id="fCopy">&copy; 2026 OH SNAP! Photobox. All rights reserved.</p></div>
+    </footer>
+
+    <script src="cms-cloud.js"></script>
+    <script>
+        let currentLang = localStorage.getItem('siteLang') || 'id';
+        let cms = null;
+        try { cms = JSON.parse(localStorage.getItem('ohsnap_cms_data')); } catch (e) {}
+        let lastRenderedSignature = '';
+
+        // Sesuaikan link email otomatis: di HP langsung buka aplikasi Gmail (Tulis Email), di PC buka Gmail Web
+        (function() {
+            const emailBtn = document.getElementById('contactEmailBtn');
+            if (!emailBtn) return;
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            if (isMobile) {
+                emailBtn.href = 'mailto:photoboxohsnap.aplikasi@gmail.com';
+                emailBtn.removeAttribute('target');
+            }
+        })();
+
+        const menuToggle = document.getElementById('menuToggle');
+        const navContainer = document.getElementById('navContainer');
+        menuToggle.addEventListener('click', () => { navContainer.classList.toggle('active'); });
+
+        function applyCMS() {
+            if (!cms) return;
+            if (cms.colors) {
+                document.documentElement.style.setProperty('--primary', cms.colors.primary || '#ff1493');
+                document.documentElement.style.setProperty('--secondary', cms.colors.secondary || '#2b4c7e');
+                document.documentElement.style.setProperty('--bg-main', cms.colors.bg || '#fff0f5');
+                document.documentElement.style.setProperty('--footer-bg', cms.colors.footer || '#18171d');
+            }
+            if (cms.footer) {
+                document.getElementById('fBrand').textContent = cms.footer.brand;
+                document.getElementById('fBranches').textContent = cms.footer.branches;
+                const ig = document.getElementById('fIg'); if(ig) { ig.textContent = cms.footer.igName; ig.href = cms.footer.igUrl || '#'; }
+                const tt = document.getElementById('fTt'); if(tt) { tt.textContent = cms.footer.ttName; tt.href = cms.footer.ttUrl || '#'; }
+
+                document.getElementById('fCardTitle').textContent = currentLang === 'en' ? (cms.footer.cardTitleEn || 'Find nearby OH SNAP! Studio') : (cms.footer.cardTitleId || 'Find nearby OH SNAP! Studio');
+                document.getElementById('fCardDesc').textContent = currentLang === 'en' ? (cms.footer.cardDescEn || 'Find the nearest booth and studio in your city to capture your special moments today!') : (cms.footer.cardDescId || 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!');
+                document.getElementById('fCopy').textContent = cms.footer.copyright;
+            }
+            try { lastRenderedSignature = JSON.stringify(cms) + '_' + currentLang; } catch (e) {}
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('siteLang', lang);
+            document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+            document.getElementById('btnID').classList.toggle('active', lang === 'id');
+            document.querySelectorAll('[data-en]').forEach(el => {
+                const text = el.getAttribute('data-' + lang);
+                if (text !== null) el.innerHTML = text;
+            });
+            applyCMS();
+        }
+
+        // Render sinkron instan (0ms) tanpa kedipan
+        setLanguage(currentLang);
+
+        async function syncLatestCMS() {
+            try {
+                const cloudCms = await OhSnapCloud.pullIfNewer();
+                if (cloudCms && JSON.stringify(cloudCms) + '_' + currentLang !== lastRenderedSignature) {
+                    cms = cloudCms;
+                    applyCMS();
+                }
+            } catch (e) {}
+        }
+
+        window.addEventListener('storage', () => { syncLatestCMS(); });
+        window.addEventListener('focus', () => { syncLatestCMS(); });
+        syncLatestCMS();
+    </script>
+</body>
+</html>

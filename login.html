@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Admin - OH SNAP! Photobox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #fff0f5 0%, #ffe4e6 50%, #fdf2f8 100%);
+            padding: 20px;
+        }
+        .login-card {
+            background: #ffffff;
+            border: 1px solid #fbcfe8;
+            border-radius: 24px;
+            padding: 40px 35px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 15px 35px rgba(255, 20, 147, 0.15);
+            text-align: center;
+        }
+        .logo-badge {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            border: 3px solid #ff1493;
+            object-fit: contain;
+            margin-bottom: 12px;
+        }
+        h1 { color: #2b4c7e; font-size: 1.6rem; font-weight: 800; margin-bottom: 5px; }
+        h1 span { color: #ff1493; }
+        p.sub { color: #6b7280; font-size: 0.9rem; margin-bottom: 25px; }
+        .form-group { text-align: left; margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: #2b4c7e; margin-bottom: 6px; }
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #fbcfe8;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.3s;
+            background: #fff;
+        }
+        .form-group input:focus { border-color: #ff1493; box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.12); }
+        .btn-login {
+            width: 100%;
+            background: linear-gradient(135deg, #ff1493, #ff69b4);
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 6px 20px rgba(255, 20, 147, 0.3);
+        }
+        .btn-login:hover { transform: translateY(-2px); }
+        .back-link { display: inline-block; margin-top: 20px; color: #ff1493; text-decoration: none; font-size: 0.88rem; font-weight: 600; }
+        .error-msg { color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; padding: 10px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 15px; display: none; text-align: left; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <img src="images/logo-icon.jpg" alt="Logo" class="logo-badge" onerror="this.style.display='none'">
+        <h1>ADMIN <span>OH SNAP!</span></h1>
+        <p class="sub">Silakan masuk untuk mengelola website</p>
+        <div id="errorBox" class="error-msg">Username atau Password salah!</div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" required autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit" class="btn-login" id="btnLoginSubmit">Masuk ke Dashboard</button>
+        </form>
+        <a href="index.html" class="back-link">← Kembali ke Halaman Utama</a>
+    </div>
+
+    <script src="cms-cloud.js"></script>
+    <script>
+        // Hanguskan sesi lama setiap kali halaman login dibuka
+        localStorage.removeItem('ohsnap_admin_logged');
+        sessionStorage.removeItem('ohsnap_admin_logged');
+        sessionStorage.removeItem('ohsnap_admin_active');
+        sessionStorage.removeItem('ohsnap_login_ticket');
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value.trim();
+            const errorBox = document.getElementById('errorBox');
+            const btn = document.getElementById('btnLoginSubmit');
+            errorBox.style.display = 'none';
+            btn.textContent = 'Memeriksa Akun...';
+            btn.disabled = true;
+
+            // Ambil data akun admin terbaru langsung dari Supabase Cloud
+            let cloudData = null;
+            try {
+                cloudData = await OhSnapCloud.load(true);
+                if (cloudData) {
+                    try { localStorage.setItem('ohsnap_cms_data', JSON.stringify(cloudData)); } catch (err) {}
+                }
+            } catch (err) {}
+
+            let storedData = cloudData;
+            if (!storedData) {
+                try { storedData = JSON.parse(localStorage.getItem('ohsnap_cms_data')); } catch (err) {}
+            }
+            
+            let adminList = (storedData && Array.isArray(storedData.admins) && storedData.admins.length > 0) ? storedData.admins : [
+                { id: 1, name: 'Super Admin', username: 'admin', pass: 'ohsnap' }
+            ];
+
+            const found = adminList.find(a => 
+                String(a.username).trim().toLowerCase() === u.toLowerCase() && 
+                String(a.pass || a.password).trim() === p
+            );
+
+            btn.textContent = 'Masuk ke Dashboard';
+            btn.disabled = false;
+
+            if (found) {
+                sessionStorage.setItem('ohsnap_admin_logged', JSON.stringify(found));
+                sessionStorage.setItem('ohsnap_login_ticket', String(Date.now()));
+                window.location.replace('admin.html');
+            } else {
+                errorBox.textContent = 'Username atau Password salah!';
+                errorBox.style.display = 'block';
+                document.getElementById('password').value = '';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resend Softcopy - OH SNAP! Photobox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('ohsnap_cms_data'));
+                if (saved && saved.colors) {
+                    const r = document.documentElement.style;
+                    if (saved.colors.primary) r.setProperty('--primary', saved.colors.primary);
+                    if (saved.colors.secondary) r.setProperty('--secondary', saved.colors.secondary);
+                    if (saved.colors.bg) r.setProperty('--bg-main', saved.colors.bg);
+                    if (saved.colors.footer) r.setProperty('--footer-bg', saved.colors.footer);
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <style>
+        :root { --primary: #ff1493; --secondary: #2b4c7e; --bg-main: #fff0f5; --footer-bg: #18171d; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg-main); color: var(--secondary); line-height: 1.6; overflow-x: hidden; }
+        header { display: flex; justify-content: space-between; align-items: center; height: 85px; padding: 0 4%; background: var(--primary); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .logo-container { display: flex; align-items: center; gap: 12px; text-decoration: none; z-index: 1001; }
+        .brand-logo-img { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; border: 2px solid #fff; }
+        .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: 2px; color: #fff; }
+        .logo span { color: #ffe4e6; }
+        .nav-container { display: flex; align-items: center; gap: 25px; }
+        .nav-menu { display: flex; align-items: center; gap: 24px; }
+        .nav-menu a { color: #fff; text-decoration: none; font-size: 1rem; font-weight: 500; opacity: 0.9; }
+        .nav-menu a:hover, .nav-menu a.active { opacity: 1; font-weight: 700; }
+        .lang-switcher { display: flex; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); border-radius: 50px; padding: 2px; }
+        .lang-btn { background: transparent; border: none; color: #fff; padding: 6px 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border-radius: 50px; }
+        .lang-btn.active { background: #fff; color: var(--primary); }
+        .menu-toggle { display: none; flex-direction: column; justify-content: space-between; width: 28px; height: 21px; background: transparent; border: none; cursor: pointer; z-index: 1001; }
+        .menu-toggle span { display: block; width: 100%; height: 3px; background-color: #fff; border-radius: 2px; }
+
+        .form-section { max-width: 700px; margin: 50px auto; padding: 0 5%; }
+        .resend-card { background: #fff; border: 1px solid #fbcfe8; border-radius: 24px; padding: 40px; box-shadow: 0 10px 30px rgba(255,182,193,0.2); }
+        .resend-card h2 { font-size: 1.8rem; font-weight: 800; color: var(--secondary); margin-bottom: 8px; text-align: center; }
+        .resend-card p.subtitle { text-align: center; color: #6b7280; font-size: 0.95rem; margin-bottom: 30px; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 0.9rem; font-weight: 700; color: var(--secondary); margin-bottom: 8px; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 0.95rem; outline: none; background: #fff; transition: 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,20,147,0.1); }
+
+        .upload-box { border: 2px dashed #fbcfe8; background: #fdf2f8; padding: 20px; border-radius: 12px; text-align: center; position: relative; }
+        .upload-box input[type="file"] { width: 100%; cursor: pointer; }
+        
+        .preview-container { margin-top: 12px; display: none; position: relative; width: fit-content; margin-left: auto; margin-right: auto; }
+        .preview-container img { width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 2px solid var(--primary); }
+        .btn-remove-photo {
+            position: absolute; top: -8px; right: -8px; background: #ef4444; color: #fff; border: none; width: 26px; height: 26px; border-radius: 50%;
+            font-weight: 800; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn-submit { width: 100%; background: var(--primary); color: #fff; border: none; padding: 14px; border-radius: 50px; font-size: 1rem; font-weight: 800; cursor: pointer; box-shadow: 0 6px 20px rgba(255,20,147,0.3); transition: 0.2s; margin-top: 10px; }
+        .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        footer { background-color: var(--footer-bg); color: #b5b5bc; padding: 60px 8% 30px; border-top: 2px solid #fbcfe8; margin-top: 60px; }
+        .footer-content { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: center; }
+        .footer-left h3 { color: #fff; font-size: 1.2rem; margin-bottom: 15px; }
+        .footer-left p, .footer-left address { font-style: normal; font-size: 0.95rem; margin-bottom: 12px; color: #9ca3af; }
+        .footer-left a { color: var(--primary); text-decoration: none; }
+        .footer-helpdesk { margin-top: 16px; }
+        .footer-helpdesk h4 { color: #fff; font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+        .footer-helpdesk ul { list-style: none; padding: 0; }
+        .footer-helpdesk li { margin-bottom: 6px; font-size: 0.95rem; }
+        .footer-location-card { background: linear-gradient(145deg, #201f26 0%, #18171d 100%); border: 1px solid rgba(255,20,147,0.3); border-radius: 20px; padding: 35px 30px; text-decoration: none; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .footer-location-card h4 { color: #fff; font-size: 1.25rem; margin-bottom: 12px; }
+        .footer-location-card p { color: #9ca3af; font-size: 0.95rem; margin-bottom: 22px; }
+        .location-btn-action { background: var(--primary); color: #fff; padding: 12px 28px; border-radius: 50px; font-weight: 700; }
+        .footer-bottom { max-width: 1300px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 0.85rem; color: #6b7280; }
+
+        @media screen and (max-width: 768px) {
+            .menu-toggle { display: flex; }
+            .nav-container { position: fixed; top: 0; left: -100%; width: 260px; height: 100vh; background: #fff; flex-direction: column; align-items: flex-start; padding: 90px 25px; transition: 0.3s; z-index: 999; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
+            .nav-container.active { left: 0; }
+            .nav-menu { flex-direction: column; width: 100%; }
+            .nav-menu a { color: var(--secondary); padding: 14px 0; border-bottom: 1px solid #f3f4f6; width: 100%; }
+            .lang-switcher { width: 100%; justify-content: center; background: #fdf2f8; border: 1px solid #fbcfe8; padding: 6px; }
+            .lang-btn { color: var(--secondary); width: 50%; text-align: center; }
+            .lang-btn.active { background: var(--primary); color: #ffffff; }
+            .resend-card { padding: 25px; }
+            .footer-content { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo-container">
+            <img src="images/logo-icon.jpg" alt="OH SNAP! Logo" class="brand-logo-img" onerror="this.style.display='none'">
+            <span class="logo">OH SNAP<span>!</span></span>
+        </a>
+        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        <div class="nav-container" id="navContainer">
+            <nav class="nav-menu">
+                <a href="index.html" data-en="Home" data-id="Halaman">Halaman</a>
+                <a href="layanan.html" data-en="Services" data-id="Layanan">Layanan</a>
+                <a href="frame.html" data-en="Frame" data-id="Frame">Frame</a>
+                <a href="lokasi.html" data-en="Locations" data-id="Lokasi">Lokasi</a>
+                <a href="resend.html" class="active" data-en="Resend Softcopy" data-id="Resend Softcopy">Resend Softcopy</a>
+                <a href="kontak.html" data-en="Contact" data-id="Kontak">Kontak</a>
+            </nav>
+            <div class="lang-switcher">
+                <button class="lang-btn" id="btnEN" onclick="setLanguage('en')">EN</button>
+                <button class="lang-btn active" id="btnID" onclick="setLanguage('id')">ID</button>
+            </div>
+        </div>
+    </header>
+
+    <section class="form-section">
+        <div class="resend-card">
+            <h2 data-en="Request Softcopy" data-id="Permintaan Softcopy">Permintaan Softcopy</h2>
+            <p class="subtitle" data-en="Please fill out the form below accurately" data-id="Mohon isi form di bawah ini dengan data yang benar">Mohon isi form di bawah ini dengan data yang benar</p>
+            
+            <form id="resendForm" onsubmit="submitResend(event)">
+                <div class="form-group">
+                    <label data-en="Full Name" data-id="Nama Lengkap">Nama Lengkap</label>
+                    <input type="text" id="resName" required placeholder="Masukkan nama lengkap">
+                </div>
+                <div class="form-group">
+                    <label data-en="Active Email" data-id="Alamat Email Aktif">Alamat Email Aktif</label>
+                    <input type="email" id="resEmail" required placeholder="contoh@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label data-en="WhatsApp Number" data-id="Nomor WhatsApp">Nomor WhatsApp</label>
+                    <input type="text" id="resWa" required placeholder="0812xxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label data-en="Studio / Branch Location" data-id="Lokasi Cabang Studio">Lokasi Cabang Studio</label>
+                    <select id="resBranch" required>
+                        <option value="Kediri Mall Lt.5">Kediri Mall Lt.5</option>
+                        <option value="Plaza Cilacap Lt.3">Plaza Cilacap Lt.3</option>
+                        <option value="Laksana Baru Lt.3">Laksana Baru Lt.3</option>
+                        <option value="Plaza Pekalongan Lt.2">Plaza Pekalongan Lt.2</option>
+                        <option value="Yogya Pemalang Lt.3">Yogya Pemalang Lt.3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label data-en="Photo Date" data-id="Tanggal Foto">Tanggal Foto</label>
+                    <input type="date" id="resDate" required>
+                </div>
+                <div class="form-group">
+                    <label data-en="Estimated Time" data-id="Perkiraan Jam Foto">Perkiraan Jam Foto</label>
+                    <input type="time" id="resTime" required>
+                </div>
+
+                <div class="form-group">
+                    <label data-en="Upload Photo / Proof of Session" data-id="Upload Foto / Bukti Sesi Foto">Upload Foto / Bukti Sesi Foto</label>
+                    <div class="upload-box">
+                        <input type="file" id="resPhoto" accept="image/*" onchange="previewPhoto(event)" required>
+                        <div id="previewBox" class="preview-container">
+                            <img id="photoPreview" src="" alt="Preview">
+                            <button type="button" class="btn-remove-photo" onclick="removePhoto()">×</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn-submit" data-en="Submit Request" data-id="Kirim Permintaan">Kirim Permintaan</button>
+            </form>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-left">
+                <h3 id="fBrand">OH SNAP! Photobox Group</h3>
+                <address><strong data-en="Branches:" data-id="Cabang:">Cabang:</strong> <span id="fBranches">Kediri Mall Lt.5, Plaza Cilacap Lt.3</span></address>
+                <p>Instagram: <a id="fIg" href="#" target="_blank">@ohsnap_photobox</a></p>
+                <p>TikTok: <a id="fTt" href="#" target="_blank">@ohsnap_photobox</a></p>
+                <div class="footer-helpdesk">
+                    <h4 data-en="Helpdesk" data-id="Bantuan">Helpdesk</h4>
+                    <ul>
+                        <li><a href="resend.html" data-en="Resend Softcopy" data-id="Kirim Ulang Softcopy">Resend Softcopy</a></li>
+                        <li><a href="login.html" data-en="Admin Login" data-id="Masuk Admin">Login Admin</a></li>
+                    </ul>
+                </div>
+            </div>
+            <a href="lokasi.html" class="footer-location-card">
+                <h4 id="fCardTitle">Find nearby OH SNAP! Studio</h4>
+                <p id="fCardDesc">Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!</p>
+                <div class="location-btn-action"><span data-en="📍 Find All Locations" data-id="📍 Temukan Semua Lokasi">📍 Temukan Semua Lokasi</span></div>
+            </a>
+        </div>
+        <div class="footer-bottom"><p id="fCopy">&copy; 2026 OH SNAP! Photobox. All rights reserved.</p></div>
+    </footer>
+
+    <script src="cms-cloud.js"></script>
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyum2HVg2InZDhEyeata3I2hTbPUQzzqyKHsEtgA9Z3vRCF2CeTjwzGTCHd4tszlOMm/exec';
+
+        let currentLang = localStorage.getItem('siteLang') || 'id';
+        let cms = null;
+        try { cms = JSON.parse(localStorage.getItem('ohsnap_cms_data')); } catch (e) {}
+        let lastRenderedSignature = '';
+
+        function escHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('navContainer').classList.toggle('active');
+        });
+
+        let uploadedPhotoBase64 = '';
+        let uploadedPhotoName = '';
+        function previewPhoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            uploadedPhotoName = file.name;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 1000;
+                    let w = img.width, h = img.height;
+                    if (w > maxDim || h > maxDim) {
+                        if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                        else { w = Math.round((w * maxDim) / h); h = maxDim; }
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, w, h);
+                    ctx.drawImage(img, 0, 0, w, h);
+                    uploadedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.75);
+                    document.getElementById('photoPreview').src = uploadedPhotoBase64;
+                    document.getElementById('previewBox').style.display = 'block';
+                };
+                img.onerror = function() {
+                    uploadedPhotoBase64 = e.target.result;
+                    document.getElementById('photoPreview').src = uploadedPhotoBase64;
+                    document.getElementById('previewBox').style.display = 'block';
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removePhoto() {
+            uploadedPhotoBase64 = '';
+            uploadedPhotoName = '';
+            document.getElementById('resPhoto').value = '';
+            document.getElementById('photoPreview').src = '';
+            document.getElementById('previewBox').style.display = 'none';
+        }
+
+        async function submitResend(event) {
+            event.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.textContent = '⏳ Mengirim Data...';
+            btn.disabled = true;
+
+            const payload = {
+                nama: document.getElementById('resName').value,
+                email: document.getElementById('resEmail').value,
+                whatsapp: document.getElementById('resWa').value,
+                cabang: document.getElementById('resBranch').value,
+                tanggal_foto: document.getElementById('resDate').value,
+                jam_foto: document.getElementById('resTime').value,
+                foto: uploadedPhotoBase64,
+                filename: uploadedPhotoName,
+                tindak_lanjut: 'Belum'
+            };
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                alert('✅ Permintaan resend softcopy berhasil dikirim!\n\nPengiriman softfile akan dilakukan dalam kurun waktu 7x24 jam. Jikalau lebih dari waktu yang sudah ditentukan harap menghubungi admin kami di kolom kontak.');
+                
+                document.getElementById('resendForm').reset();
+                removePhoto();
+            } catch (err) {
+                console.error(err);
+                alert('⚠️ Terjadi kendala koneksi saat mengirim data. Silakan coba lagi.');
+            } finally {
+                btn.textContent = currentLang === 'en' ? 'Submit Request' : 'Kirim Permintaan';
+                btn.disabled = false;
+            }
+        }
+
+        function applyCMS() {
+            if (!cms) return;
+            if (cms.colors) {
+                document.documentElement.style.setProperty('--primary', cms.colors.primary || '#ff1493');
+                document.documentElement.style.setProperty('--secondary', cms.colors.secondary || '#2b4c7e');
+                document.documentElement.style.setProperty('--bg-main', cms.colors.bg || '#fff0f5');
+                document.documentElement.style.setProperty('--footer-bg', cms.colors.footer || '#18171d');
+            }
+            if (Array.isArray(cms.locations) && cms.locations.length > 0) {
+                const branchSelect = document.getElementById('resBranch');
+                const currentVal = branchSelect.value;
+                branchSelect.innerHTML = cms.locations.map(l => {
+                    const label = `${l.name || 'Cabang'}${l.floor ? ' ' + l.floor.replace(/^Lantai\s+/i, 'Lt.') : ''}`;
+                    return `<option value="${escHtml(label)}">${escHtml(label)}</option>`;
+                }).join('');
+                if (currentVal && Array.from(branchSelect.options).some(o => o.value === currentVal)) {
+                    branchSelect.value = currentVal;
+                }
+            }
+            if (cms.footer) {
+                document.getElementById('fBrand').textContent = cms.footer.brand;
+                document.getElementById('fBranches').textContent = cms.footer.branches;
+                const ig = document.getElementById('fIg'); if(ig) { ig.textContent = cms.footer.igName; ig.href = cms.footer.igUrl || '#'; }
+                const tt = document.getElementById('fTt'); if(tt) { tt.textContent = cms.footer.ttName; tt.href = cms.footer.ttUrl || '#'; }
+
+                document.getElementById('fCardTitle').textContent = currentLang === 'en' ? (cms.footer.cardTitleEn || 'Find nearby OH SNAP! Studio') : (cms.footer.cardTitleId || 'Find nearby OH SNAP! Studio');
+                document.getElementById('fCardDesc').textContent = currentLang === 'en' ? (cms.footer.cardDescEn || 'Find the nearest booth and studio in your city to capture your special moments today!') : (cms.footer.cardDescId || 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!');
+                document.getElementById('fCopy').textContent = cms.footer.copyright;
+            }
+            try { lastRenderedSignature = JSON.stringify(cms) + '_' + currentLang; } catch (e) {}
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('siteLang', lang);
+            document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+            document.getElementById('btnID').classList.toggle('active', lang === 'id');
+            document.querySelectorAll('[data-en]').forEach(el => { el.innerHTML = el.getAttribute('data-' + lang); });
+            applyCMS();
+        }
+
+        // Render sinkron instan (0ms) tanpa kedipan
+        setLanguage(currentLang);
+
+        async function syncLatestCMS() {
+            try {
+                const cloudCms = await OhSnapCloud.pullIfNewer();
+                if (cloudCms && JSON.stringify(cloudCms) + '_' + currentLang !== lastRenderedSignature) {
+                    cms = cloudCms;
+                    applyCMS();
+                }
+            } catch (e) {}
+        }
+
+        window.addEventListener('storage', () => { syncLatestCMS(); });
+        window.addEventListener('focus', () => { syncLatestCMS(); });
+        syncLatestCMS();
+    </script>
+</body>
+</html>

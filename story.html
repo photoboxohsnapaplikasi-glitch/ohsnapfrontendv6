@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Story - OH SNAP! Photobox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('ohsnap_cms_data'));
+                if (saved && saved.colors) {
+                    const r = document.documentElement.style;
+                    if (saved.colors.primary) r.setProperty('--primary', saved.colors.primary);
+                    if (saved.colors.secondary) r.setProperty('--secondary', saved.colors.secondary);
+                    if (saved.colors.bg) r.setProperty('--bg-main', saved.colors.bg);
+                    if (saved.colors.footer) r.setProperty('--footer-bg', saved.colors.footer);
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <style>
+        :root { --primary: #ff1493; --secondary: #2b4c7e; --bg-main: #fff0f5; --footer-bg: #18171d; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg-main); color: var(--secondary); line-height: 1.6; overflow-x: hidden; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; height: 85px; padding: 0 4%; background: var(--primary); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .logo-container { display: flex; align-items: center; gap: 12px; text-decoration: none; z-index: 1001; }
+        .brand-logo-img { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; border: 2px solid #fff; }
+        .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: 2px; color: #fff; }
+        .logo span { color: #ffe4e6; }
+        .nav-container { display: flex; align-items: center; gap: 25px; }
+        .nav-menu { display: flex; align-items: center; gap: 24px; }
+        .nav-menu a { color: #fff; text-decoration: none; font-size: 1rem; font-weight: 500; opacity: 0.9; transition: 0.3s; }
+        .nav-menu a:hover, .nav-menu a.active { opacity: 1; font-weight: 700; }
+        .lang-switcher { display: flex; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); border-radius: 50px; padding: 2px; }
+        .lang-btn { background: transparent; border: none; color: #fff; padding: 6px 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border-radius: 50px; }
+        .lang-btn.active { background: #fff; color: var(--primary); }
+        .menu-toggle { display: none; flex-direction: column; justify-content: space-between; width: 28px; height: 21px; background: transparent; border: none; cursor: pointer; z-index: 1001; }
+        .menu-toggle span { display: block; width: 100%; height: 3px; background-color: #fff; border-radius: 2px; }
+
+        .story-container { max-width: 900px; margin: 60px auto; padding: 0 6%; }
+        .story-card { background: #fff; border: 1px solid #fbcfe8; border-radius: 24px; padding: 45px; box-shadow: 0 10px 30px rgba(255,182,193,0.2); }
+        
+        .story-img-box { width: 100%; height: 380px; border-radius: 18px; overflow: hidden; margin-bottom: 30px; border: 2px solid #fbcfe8; background: #fff; }
+        .story-img-box img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; }
+
+        .story-card h1 { font-size: 2.3rem; font-weight: 800; margin-bottom: 20px; text-align: center; color: var(--secondary); }
+        .story-card h1 span { color: var(--primary); }
+        .story-card .story-content { font-size: 1.02rem; color: #4b5563; margin-bottom: 18px; text-align: left; white-space: pre-line; line-height: 1.8; overflow-wrap: break-word; word-spacing: normal; }
+
+        footer { background-color: var(--footer-bg); color: #b5b5bc; padding: 60px 8% 30px; border-top: 2px solid #fbcfe8; margin-top: 60px; }
+        .footer-content { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: center; }
+        .footer-left h3 { color: #fff; font-size: 1.2rem; margin-bottom: 15px; }
+        .footer-left p, .footer-left address { font-style: normal; font-size: 0.95rem; line-height: 1.6; margin-bottom: 12px; color: #9ca3af; }
+        .footer-left a { color: var(--primary); text-decoration: none; }
+        .footer-helpdesk { margin-top: 16px; }
+        .footer-helpdesk h4 { color: #fff; font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+        .footer-helpdesk ul { list-style: none; padding: 0; }
+        .footer-helpdesk li { margin-bottom: 6px; font-size: 0.95rem; }
+        .footer-location-card { background: linear-gradient(145deg, #201f26 0%, #18171d 100%); border: 1px solid rgba(255,20,147,0.3); border-radius: 20px; padding: 35px 30px; text-decoration: none; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .footer-location-card h4 { color: #fff; font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; }
+        .footer-location-card p { color: #9ca3af; font-size: 0.95rem; margin-bottom: 22px; }
+        .location-btn-action { background: var(--primary); color: #fff; padding: 12px 28px; border-radius: 50px; font-weight: 700; }
+        .footer-bottom { max-width: 1300px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 0.85rem; color: #6b7280; }
+
+        @media screen and (max-width: 768px) {
+            .menu-toggle { display: flex; }
+            .nav-container { position: fixed; top: 0; left: -100%; width: 260px; height: 100vh; background: #fff; flex-direction: column; align-items: flex-start; padding: 90px 25px; transition: 0.3s; z-index: 999; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
+            .nav-container.active { left: 0; }
+            .nav-menu { flex-direction: column; width: 100%; }
+            .nav-menu a { color: var(--secondary); padding: 14px 0; border-bottom: 1px solid #f3f4f6; width: 100%; }
+            .lang-switcher { width: 100%; justify-content: center; background: #fdf2f8; border: 1px solid #fbcfe8; padding: 6px; }
+            .lang-btn { color: var(--secondary); width: 50%; text-align: center; }
+            .lang-btn.active { background: var(--primary); color: #ffffff; }
+            .story-card { padding: 25px; }
+            .story-card h1 { font-size: 1.8rem; }
+            .story-img-box { height: 240px; }
+            .footer-content { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo-container">
+            <img src="images/logo-icon.jpg" alt="OH SNAP! Logo" class="brand-logo-img" onerror="this.style.display='none'">
+            <span class="logo">OH SNAP<span>!</span></span>
+        </a>
+        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        <div class="nav-container" id="navContainer">
+            <nav class="nav-menu">
+                <a href="index.html" data-en="Home" data-id="Halaman">Halaman</a>
+                <a href="layanan.html" data-en="Services" data-id="Layanan">Layanan</a>
+                <a href="frame.html" data-en="Frame" data-id="Frame">Frame</a>
+                <a href="lokasi.html" data-en="Locations" data-id="Lokasi">Lokasi</a>
+                <a href="resend.html" data-en="Resend Softcopy" data-id="Resend Softcopy">Resend Softcopy</a>
+                <a href="kontak.html" data-en="Contact" data-id="Kontak">Kontak</a>
+            </nav>
+            <div class="lang-switcher">
+                <button class="lang-btn" id="btnEN" onclick="setLanguage('en')">EN</button>
+                <button class="lang-btn active" id="btnID" onclick="setLanguage('id')">ID</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="story-container">
+        <div class="story-card">
+            <div class="story-img-box">
+                <img id="storyImg" alt="Our Story" onload="this.style.opacity='1'" onerror="this.style.opacity='0'">
+            </div>
+            <h1 id="storyTitle"></h1>
+            <div id="storyText" class="story-content"></div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-left">
+                <h3 id="fBrand">OH SNAP! Photobox Group</h3>
+                <address><strong data-en="Branches:" data-id="Cabang:">Cabang:</strong> <span id="fBranches">Kediri Mall Lt.5, Plaza Cilacap Lt.3</span></address>
+                <p>Instagram: <a id="fIg" href="#" target="_blank">@ohsnap_photobox</a></p>
+                <p>TikTok: <a id="fTt" href="#" target="_blank">@ohsnap_photobox</a></p>
+                <div class="footer-helpdesk">
+                    <h4 data-en="Helpdesk" data-id="Bantuan">Helpdesk</h4>
+                    <ul>
+                        <li><a href="resend.html" data-en="Resend Softcopy" data-id="Kirim Ulang Softcopy">Resend Softcopy</a></li>
+                        <li><a href="login.html" data-en="Admin Login" data-id="Masuk Admin">Login Admin</a></li>
+                    </ul>
+                </div>
+            </div>
+            <a href="lokasi.html" class="footer-location-card">
+                <h4 id="fCardTitle">Find nearby OH SNAP! Studio</h4>
+                <p id="fCardDesc">Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!</p>
+                <div class="location-btn-action"><span data-en="📍 Find All Locations" data-id="📍 Temukan Semua Lokasi">📍 Temukan Semua Lokasi</span></div>
+            </a>
+        </div>
+        <div class="footer-bottom"><p id="fCopy">&copy; 2026 OH SNAP! Photobox. All rights reserved.</p></div>
+    </footer>
+
+    <script src="cms-cloud.js"></script>
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let currentLang = localStorage.getItem('siteLang') || 'id';
+        let cms = null;
+        try { cms = JSON.parse(localStorage.getItem('ohsnap_cms_data')); } catch (e) {}
+        let lastRenderedSignature = '';
+
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('navContainer').classList.toggle('active');
+        });
+
+
+        // Merapikan spasi setelah tanda baca (mis. "cepat,momen" -> "cepat, momen", "saja.OH" -> "saja. OH")
+        // Token yang mirip URL / email / nama file dibiarkan apa adanya.
+        function rapikanSpasi(text) {
+            if (!text) return '';
+            return String(text).split(/(\s+)/).map(function (tok) {
+                if (!tok || /^\s+$/.test(tok)) return tok;
+                if (/^(https?:|www\.)|@|\.(com|co|id|net|org|io|html|jpg|jpeg|png|webp)(\b|\/|$)/i.test(tok)) return tok;
+                return tok
+                    .replace(/([,;!?])(?=[A-Za-z\u00C0-\u024F])/g, '$1 ')
+                    .replace(/([A-Za-z\u00C0-\u024F]{2,})\.(?=[A-Za-z\u00C0-\u024F])/g, '$1. ');
+            }).join('');
+        }
+
+        function applyCMS() {
+            if (cms && cms.colors) {
+                document.documentElement.style.setProperty('--primary', cms.colors.primary || '#ff1493');
+                document.documentElement.style.setProperty('--secondary', cms.colors.secondary || '#2b4c7e');
+                document.documentElement.style.setProperty('--bg-main', cms.colors.bg || '#fff0f5');
+                document.documentElement.style.setProperty('--footer-bg', cms.colors.footer || '#18171d');
+            }
+            const ab = (cms && cms.banners && cms.banners.about) ? cms.banners.about : {
+                titleId: 'OUR <span>STORY</span>',
+                titleEn: 'OUR <span>STORY</span>',
+                fullId: 'OH SNAP! Photobox hadir dari semangat untuk mengabadikan setiap momen hangat, spontan, dan tak terlupakan bersama orang-orang tersayang. Berawal dari konsep photobox tematik yang unik dan kreatif, kini kami hadir di berbagai pusat perbelanjaan (Mall).',
+                fullEn: 'OH SNAP! Photobox was born from the spirit of capturing warm, spontaneous, and unforgettable moments with your favorite people...',
+                imgUrl: ''
+            };
+            const titleEl = document.getElementById('storyTitle');
+            const textEl = document.getElementById('storyText');
+            const imgEl = document.getElementById('storyImg');
+
+            if (titleEl) {
+                titleEl.innerHTML = currentLang === 'en' ? (ab.titleEn || 'OUR <span>STORY</span>') : (ab.titleId || 'OUR <span>STORY</span>');
+            }
+            if (textEl) {
+                const fullTextId = ab.fullId || ab.subId || '';
+                const fullTextEn = ab.fullEn || ab.subEn || '';
+                textEl.textContent = rapikanSpasi(currentLang === 'en' ? (fullTextEn || fullTextId) : (fullTextId || fullTextEn));
+            }
+            if (imgEl) {
+                if (ab.imgUrl && ab.imgUrl.trim() !== '' && ab.imgUrl !== 'images/about-img.jpg') {
+                    if (imgEl.getAttribute('src') !== ab.imgUrl) imgEl.src = ab.imgUrl;
+                    imgEl.style.display = 'block';
+                    imgEl.style.opacity = '1';
+                } else {
+                    imgEl.style.opacity = '0';
+                }
+            }
+            if (cms && cms.footer) {
+                document.getElementById('fBrand').textContent = cms.footer.brand;
+                document.getElementById('fBranches').textContent = cms.footer.branches;
+                const ig = document.getElementById('fIg'); if(ig) { ig.textContent = cms.footer.igName; ig.href = cms.footer.igUrl || '#'; }
+                const tt = document.getElementById('fTt'); if(tt) { tt.textContent = cms.footer.ttName; tt.href = cms.footer.ttUrl || '#'; }
+
+                document.getElementById('fCardTitle').textContent = currentLang === 'en' ? (cms.footer.cardTitleEn || 'Find nearby OH SNAP! Studio') : (cms.footer.cardTitleId || 'Find nearby OH SNAP! Studio');
+                document.getElementById('fCardDesc').textContent = currentLang === 'en' ? (cms.footer.cardDescEn || 'Find the nearest booth and studio in your city to capture your special moments today!') : (cms.footer.cardDescId || 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!');
+                document.getElementById('fCopy').textContent = cms.footer.copyright;
+            }
+            try { lastRenderedSignature = JSON.stringify(cms) + '_' + currentLang; } catch (e) {}
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('siteLang', lang);
+            document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+            document.getElementById('btnID').classList.toggle('active', lang === 'id');
+            document.querySelectorAll('[data-en]').forEach(el => { el.innerHTML = el.getAttribute('data-' + lang); });
+            applyCMS();
+        }
+
+        // Render sinkron instan (0ms) tanpa kedipan
+        setLanguage(currentLang);
+
+        async function syncLatestCMS() {
+            try {
+                const cloudCms = await OhSnapCloud.pullIfNewer();
+                if (cloudCms && JSON.stringify(cloudCms) + '_' + currentLang !== lastRenderedSignature) {
+                    cms = cloudCms;
+                    applyCMS();
+                }
+            } catch (e) {}
+        }
+
+        window.addEventListener('storage', () => { syncLatestCMS(); });
+        window.addEventListener('focus', () => { syncLatestCMS(); });
+        syncLatestCMS();
+    </script>
+</body>
+</html>

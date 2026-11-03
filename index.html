@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OH SNAP! Photobox - Capture Your Fun Moments</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            try {
+                const raw = localStorage.getItem('ohsnap_cms_data');
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    if (saved && saved.colors) {
+                        const r = document.documentElement.style;
+                        if (saved.colors.primary) r.setProperty('--primary', saved.colors.primary);
+                        if (saved.colors.secondary) r.setProperty('--secondary', saved.colors.secondary);
+                        if (saved.colors.bg) r.setProperty('--bg-main', saved.colors.bg);
+                        if (saved.colors.footer) r.setProperty('--footer-bg', saved.colors.footer);
+                    }
+                } else {
+                    // Pengunjung baru pertama kali (localStorage kosong): tahan render teks default sampai data Cloud masuk
+                    document.documentElement.classList.add('awaiting-first-cloud');
+                    setTimeout(() => document.documentElement.classList.remove('awaiting-first-cloud'), 700);
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <style>
+        :root { --primary: #ff1493; --secondary: #2b4c7e; --bg-main: #fff0f5; --footer-bg: #18171d; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg-main); color: var(--secondary); line-height: 1.6; overflow-x: hidden; }
+        html.awaiting-first-cloud .hero-banner-content,
+        html.awaiting-first-cloud .about-section,
+        html.awaiting-first-cloud .section-wrap { opacity: 0; }
+        .hero-banner-content, .about-section, .section-wrap { transition: opacity 0.15s ease; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; height: 85px; padding: 0 4%; background: var(--primary); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .logo-container { display: flex; align-items: center; gap: 12px; text-decoration: none; z-index: 1001; }
+        .brand-logo-img { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; border: 2px solid #fff; }
+        .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: 2px; color: #fff; }
+        .logo span { color: #ffe4e6; }
+        .nav-container { display: flex; align-items: center; gap: 25px; }
+        .nav-menu { display: flex; align-items: center; gap: 24px; }
+        .nav-menu a { color: #fff; text-decoration: none; font-size: 1rem; font-weight: 500; opacity: 0.9; transition: 0.3s; }
+        .nav-menu a:hover, .nav-menu a.active { opacity: 1; font-weight: 700; }
+        .lang-switcher { display: flex; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); border-radius: 50px; padding: 2px; }
+        .lang-btn { background: transparent; border: none; color: #fff; padding: 6px 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border-radius: 50px; }
+        .lang-btn.active { background: #fff; color: var(--primary); }
+        .menu-toggle { display: none; flex-direction: column; justify-content: space-between; width: 28px; height: 21px; background: transparent; border: none; cursor: pointer; z-index: 1001; }
+        .menu-toggle span { display: block; width: 100%; height: 3px; background-color: #fff; border-radius: 2px; }
+
+        /* HERO BANNER UTAMA */
+        .hero-banner-section {
+            position: relative; width: 100%; height: 480px;
+            background-color: #18171d;
+            background-size: cover; background-position: center;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center; color: #fff; padding: 0 20px;
+        }
+        .hero-banner-section::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.45); z-index: 1;
+        }
+        .hero-banner-content { position: relative; z-index: 2; max-width: 900px; }
+        .hero-banner-content h1 { font-size: 3.2rem; font-weight: 800; letter-spacing: 1px; line-height: 1.2; margin-bottom: 15px; text-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .hero-banner-content h1 span { color: #ff69b4; }
+        .hero-banner-content p { font-size: 1.15rem; margin-bottom: 25px; opacity: 0.95; }
+        .btn-hero-action { display: inline-block; background: transparent; color: #fff; border: 2px solid #fff; padding: 12px 30px; border-radius: 50px; font-weight: 700; text-decoration: none; transition: 0.3s; }
+        .btn-hero-action:hover { background: #fff; color: var(--secondary); }
+
+        /* ABOUT / STORY SEJAJAR */
+        .about-section { max-width: 1250px; margin: 60px auto; padding: 0 5%; }
+        .about-grid-container {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 50px;
+            align-items: center;
+        }
+        .about-text-box { display: flex; flex-direction: column; justify-content: center; }
+        .about-text-box h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 15px; color: var(--secondary); }
+        .about-text-box h1 span { color: var(--primary); }
+        .about-text-box p { font-size: 1.02rem; color: #4b5563; margin-bottom: 25px; text-align: left; line-height: 1.7; overflow-wrap: break-word; }
+        .btn-readmore { 
+            display: inline-block; background: var(--primary); color: #fff; padding: 12px 32px; 
+            border-radius: 50px; text-decoration: none; font-weight: 700; box-shadow: 0 6px 20px rgba(255,20,147,0.3); 
+            transition: 0.3s; width: fit-content;
+        }
+        .btn-readmore:hover { transform: translateY(-2px); }
+
+        .about-img-box {
+            width: 100%; height: 350px; border-radius: 20px; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); background: #fff; border: 2px solid #fbcfe8;
+        }
+        .about-img-box img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; }
+
+        /* KOTAK PLACEHOLDER PORTRAIT 9:16 PENUH */
+        .empty-portrait-box {
+            width: 100%; height: 460px; background: #ffffff; border: 2px solid #fbcfe8; border-radius: 20px;
+            display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(255, 182, 193, 0.15);
+        }
+        .empty-portrait-video {
+            width: 100%; height: 480px; background: #ffffff; border: 2px solid #fbcfe8; border-radius: 24px;
+            display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(255, 182, 193, 0.18);
+        }
+
+        .section-wrap { max-width: 1250px; margin: 60px auto; padding: 0 5%; }
+        .section-head { text-align: center; margin-bottom: 35px; }
+        .section-head h2 { font-size: 2.2rem; font-weight: 800; color: var(--secondary); margin-bottom: 8px; }
+        .section-head h2 span { color: var(--primary); }
+        .section-head p { color: #6b7280; font-size: 1rem; }
+
+        /* SISTEM SLIDER / CAROUSEL */
+        .slider-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .slider-container {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            width: 100%;
+            padding: 10px 0;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .slider-container::-webkit-scrollbar { display: none; }
+
+        .slide-item-studio { flex: 0 0 calc((100% - 48px) / 4); min-width: 240px; }
+        .slide-item-promo { flex: 0 0 calc((100% - 32px) / 3); min-width: 280px; }
+        .slide-item-video { flex: 0 0 calc((100% - 64px) / 5); min-width: 195px; }
+
+        .slider-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 1.4rem;
+            font-weight: 800;
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 4px 15px rgba(255,20,147,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .slider-btn:hover { background: #e00d7f; transform: translateY(-50%) scale(1.05); }
+        .slider-btn-left { left: -22px; }
+        .slider-btn-right { right: -22px; }
+
+        .card-item { background: #fff; border: 1px solid #fbcfe8; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 25px rgba(255,182,193,0.18); display: flex; flex-direction: column; height: 100%; }
+        .card-body { padding: 22px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .badge-tag { display: inline-block; background: var(--primary); color: #fff; font-size: 0.75rem; font-weight: 800; padding: 4px 12px; border-radius: 50px; margin-bottom: 10px; width: fit-content; }
+        .card-body h3 { font-size: 1.2rem; font-weight: 700; color: var(--secondary); margin-bottom: 8px; }
+        .card-body p { font-size: 0.92rem; color: #4b5563; }
+
+        footer { background-color: var(--footer-bg); color: #b5b5bc; padding: 60px 8% 30px; border-top: 2px solid #fbcfe8; margin-top: 60px; }
+        .footer-content { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: center; }
+        .footer-left h3 { color: #fff; font-size: 1.2rem; margin-bottom: 15px; }
+        .footer-left p, .footer-left address { font-style: normal; font-size: 0.95rem; margin-bottom: 12px; color: #9ca3af; }
+        .footer-left a { color: var(--primary); text-decoration: none; }
+        .footer-helpdesk { margin-top: 16px; }
+        .footer-helpdesk h4 { color: #fff; font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+        .footer-helpdesk ul { list-style: none; padding: 0; }
+        .footer-helpdesk li { margin-bottom: 6px; font-size: 0.95rem; }
+        .footer-location-card { background: linear-gradient(145deg, #201f26 0%, #18171d 100%); border: 1px solid rgba(255,20,147,0.3); border-radius: 20px; padding: 35px 30px; text-decoration: none; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .footer-location-card h4 { color: #fff; font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; }
+        .footer-location-card p { color: #9ca3af; font-size: 0.95rem; margin-bottom: 22px; }
+        .location-btn-action { background: var(--primary); color: #fff; padding: 12px 28px; border-radius: 50px; font-weight: 700; font-size: 0.95rem; }
+        .footer-bottom { max-width: 1300px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 0.85rem; color: #6b7280; }
+
+        @media screen and (max-width: 1024px) {
+            .slide-item-studio { flex: 0 0 calc((100% - 32px) / 3); }
+            .slide-item-promo { flex: 0 0 calc((100% - 16px) / 2); }
+            .slide-item-video { flex: 0 0 calc((100% - 32px) / 3); }
+        }
+        @media screen and (max-width: 768px) {
+            .menu-toggle { display: flex; }
+            .nav-container { position: fixed; top: 0; left: -100%; width: 260px; height: 100vh; background: #fff; flex-direction: column; align-items: flex-start; padding: 90px 25px; transition: 0.3s; z-index: 999; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
+            .nav-container.active { left: 0; }
+            .nav-menu { flex-direction: column; width: 100%; }
+            .nav-menu a { color: var(--secondary); padding: 14px 0; border-bottom: 1px solid #f3f4f6; width: 100%; }
+            .lang-switcher { width: 100%; justify-content: center; background: #fdf2f8; border: 1px solid #fbcfe8; padding: 6px; }
+            .lang-btn { color: var(--secondary); width: 50%; text-align: center; }
+            .lang-btn.active { background: var(--primary); color: #ffffff; }
+            .hero-banner-section { height: 350px; }
+            .hero-banner-content h1 { font-size: 2.1rem; }
+            .about-grid-container { grid-template-columns: 1fr; }
+            .slide-item-studio, .slide-item-promo, .slide-item-video { flex: 0 0 82%; }
+            .slider-btn { width: 35px; height: 35px; font-size: 1.1rem; }
+            .slider-btn-left { left: -10px; }
+            .slider-btn-right { right: -10px; }
+            .footer-content { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo-container">
+            <img src="images/logo-icon.jpg" alt="OH SNAP! Logo" class="brand-logo-img" onerror="this.style.display='none'">
+            <span class="logo">OH SNAP<span>!</span></span>
+        </a>
+        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        <div class="nav-container" id="navContainer">
+            <nav class="nav-menu">
+                <a href="index.html" class="active" data-en="Home" data-id="Halaman">Halaman</a>
+                <a href="layanan.html" data-en="Services" data-id="Layanan">Layanan</a>
+                <a href="frame.html" data-en="Frame" data-id="Frame">Frame</a>
+                <a href="lokasi.html" data-en="Locations" data-id="Lokasi">Lokasi</a>
+                <a href="resend.html" data-en="Resend Softcopy" data-id="Resend Softcopy">Resend Softcopy</a>
+                <a href="kontak.html" data-en="Contact" data-id="Kontak">Kontak</a>
+            </nav>
+            <div class="lang-switcher">
+                <button class="lang-btn" id="btnEN" onclick="setLanguage('en')">EN</button>
+                <button class="lang-btn active" id="btnID" onclick="setLanguage('id')">ID</button>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero-banner-section" id="heroBannerBg">
+        <div class="hero-banner-content">
+            <h1 id="heroTitle"></h1>
+            <p id="heroSub"></p>
+            <a href="lokasi.html" class="btn-hero-action" data-en="Check our locations!" data-id="Cek Lokasi Kami!">Cek Lokasi Kami!</a>
+        </div>
+    </section>
+
+    <section class="about-section">
+        <div class="about-grid-container">
+            <div class="about-text-box">
+                <h1 id="aboutTitle"></h1>
+                <p id="aboutSub"></p>
+                <a href="story.html" class="btn-readmore" id="aboutBtn">Read more →</a>
+            </div>
+            <div class="about-img-box">
+                <img id="aboutImg" alt="Our Story Photo" onload="this.style.opacity='1'" onerror="this.style.opacity='0'">
+            </div>
+        </div>
+    </section>
+
+    <!-- SUASANA STUDIO -->
+    <section class="section-wrap">
+        <div class="section-head">
+            <h2 id="secStudioTitle"></h2>
+            <p id="secStudioSub"></p>
+        </div>
+        <div class="slider-wrapper">
+            <button class="slider-btn slider-btn-left" onclick="scrollSlider('studioGrid', -1)">&#10094;</button>
+            <div id="studioGrid" class="slider-container"></div>
+            <button class="slider-btn slider-btn-right" onclick="scrollSlider('studioGrid', 1)">&#10095;</button>
+        </div>
+    </section>
+
+    <!-- PROMO SPESIAL -->
+    <section class="section-wrap">
+        <div class="section-head">
+            <h2 id="secPromoTitle"></h2>
+            <p id="secPromoSub"></p>
+        </div>
+        <div class="slider-wrapper">
+            <button class="slider-btn slider-btn-left" onclick="scrollSlider('promoGrid', -1)">&#10094;</button>
+            <div id="promoGrid" class="slider-container"></div>
+            <button class="slider-btn slider-btn-right" onclick="scrollSlider('promoGrid', 1)">&#10095;</button>
+        </div>
+    </section>
+
+    <!-- VIDEO FEED -->
+    <section class="section-wrap">
+        <div class="section-head">
+            <h2 id="secVideoTitle"></h2>
+            <p id="secVideoSub"></p>
+        </div>
+        <div class="slider-wrapper">
+            <button class="slider-btn slider-btn-left" onclick="scrollSlider('videoGrid', -1)">&#10094;</button>
+            <div id="videoGrid" class="slider-container"></div>
+            <button class="slider-btn slider-btn-right" onclick="scrollSlider('videoGrid', 1)">&#10095;</button>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-left">
+                <h3 id="fBrand">OH SNAP! Photobox Group</h3>
+                <address><strong data-en="Branches:" data-id="Cabang:">Cabang:</strong> <span id="fBranches">Kediri Mall Lt.5, Plaza Cilacap Lt.3</span></address>
+                <p>Instagram: <a id="fIg" href="#" target="_blank">@ohsnap_photobox</a></p>
+                <p>TikTok: <a id="fTt" href="#" target="_blank">@ohsnap_photobox</a></p>
+                <div class="footer-helpdesk">
+                    <h4 data-en="Helpdesk" data-id="Bantuan">Helpdesk</h4>
+                    <ul>
+                        <li><a href="resend.html" data-en="Resend Softcopy" data-id="Kirim Ulang Softcopy">Resend Softcopy</a></li>
+                        <li><a href="login.html" data-en="Admin Login" data-id="Masuk Admin">Login Admin</a></li>
+                    </ul>
+                </div>
+            </div>
+            <a href="lokasi.html" class="footer-location-card">
+                <h4 id="fCardTitle">Find nearby OH SNAP! Studio</h4>
+                <p id="fCardDesc">Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!</p>
+                <div class="location-btn-action"><span data-en="📍 Find All Locations" data-id="📍 Temukan Semua Lokasi">📍 Temukan Semua Lokasi</span></div>
+            </a>
+        </div>
+        <div class="footer-bottom"><p id="fCopy">&copy; 2026 OH SNAP! Photobox. All rights reserved.</p></div>
+    </footer>
+
+    <script src="cms-cloud.js"></script>
+    <script>
+        let currentLang = localStorage.getItem('siteLang') || 'id';
+
+        function escHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function getMediaFromIDB(key) {
+            return new Promise((resolve) => {
+                const req = indexedDB.open('ohsnap_media_db', 2);
+                req.onupgradeneeded = function(e) {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('media')) {
+                        db.createObjectStore('media');
+                    }
+                };
+                req.onsuccess = function(e) {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('media')) return resolve(null);
+                    const tx = db.transaction('media', 'readonly');
+                    const getReq = tx.objectStore('media').get(key);
+                    getReq.onsuccess = () => resolve(getReq.result || null);
+                    getReq.onerror = () => resolve(null);
+                };
+                req.onerror = () => resolve(null);
+            });
+        }
+        
+        const defaultCMS = {
+            colors: { primary: '#ff1493', secondary: '#2b4c7e', bg: '#fff0f5', footer: '#18171d' },
+            banners: {
+                home: { titleId: 'LANGSUNG CETAK BAWA PULANG', titleEn: 'INSTANT PRINT & TAKE IT HOME', subId: 'Photobox & Self-Photo Studio kekinian.', subEn: 'Trendy Photobox Studio.', imgUrl: '' },
+                about: { 
+                    titleId: 'About Our <span>Story</span>', titleEn: 'About Our <span>Story</span>', 
+                    subId: 'OH SNAP! Photobox hadir dari semangat untuk mengabadikan setiap momen hangat, spontan, dan tak terlupakan bersama orang-orang tersayang. Berawal dari konsep photobox tematik yang unik dan kreatif, kini kami hadir di berbagai pusat perbelanjaan (Mall).',
+                    subEn: 'OH SNAP! Photobox was born from the spirit of capturing warm, spontaneous, and unforgettable moments with your favorite people...',
+                    btnId: 'Read more →', btnEn: 'Read more →',
+                    imgUrl: '' 
+                }
+            },
+            titles: { 
+                titlePromoId: 'Promo <span>Spesial</span> Bulan Ini',
+                titlePromoEn: 'This Month\'s <span>Special</span> Promo',
+                subPromoId: 'Jangan lewatkan penawaran menarik di berbagai cabang OH SNAP! Photobox',
+                subPromoEn: 'Don\'t miss exciting offers at various OH SNAP! Photobox branches',
+                titleStudioId: 'Suasana <span>Studio & Booth</span>',
+                titleStudioEn: '<span>Studio & Booth</span> Vibes',
+                subStudioId: 'Intip keseruan dan estetika bilik tematik kami di berbagai kota',
+                subStudioEn: 'Take a peek at the fun and aesthetics of our thematic booths across cities',
+                titleVideoId: 'Keseruan Sobat <span>OH SNAP!</span>',
+                titleVideoEn: 'Fun Moments with <span>OH SNAP!</span>',
+                subVideoId: 'Video feed momen seru pelanggan kami di bilik photobox',
+                subVideoEn: 'Video feed of our customers\' fun moments in the photobox booth'
+            },
+            studios: [
+                { title: 'Booth Train Thematic', desc: 'Desain kabin kereta estetik', img: '' },
+                { title: 'Booth Hotel & Elevator', desc: 'Nuansa lobi hotel & lift', img: '' },
+                { title: 'Booth Claw & Pastel', desc: 'Warna cerah penuh keceriaan', img: '' },
+                { title: 'Booth Portable Series', desc: 'Gaya minimalis modern', img: '' }
+            ],
+            videos: [
+                { title: 'Video 1', url: '' },
+                { title: 'Video 2', url: '' },
+                { title: 'Video 3', url: '' },
+                { title: 'Video 4', url: '' },
+                { title: 'Video 5', url: '' }
+            ],
+            promos: [
+                { title: 'Promo Pelajar & Mahasiswa', badge: 'HOT PROMO', desc: 'Diskon spesial KTM aktif!', img: '' },
+                { title: 'Paket Bundling Extra Print', badge: 'BEST DEAL', desc: 'Cetak lebih banyak untuk geng.', img: '' },
+                { title: 'Weekend Flash Sale', badge: 'LIMITED', desc: 'Potongan harga khusus.', img: '' }
+            ],
+            footer: { 
+                brand: 'OH SNAP! Photobox Group', 
+                branches: 'Kediri Mall Lt.5, Plaza Cilacap Lt.3', 
+                igName: '@ohsnap_photobox', 
+                igUrl: '#', 
+                ttName: '@ohsnap_photobox', 
+                ttUrl: '#', 
+                cardTitleId: 'Find nearby OH SNAP! Studio',
+                cardTitleEn: 'Find nearby OH SNAP! Studio',
+                cardDescId: 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!',
+                cardDescEn: 'Find the nearest booth and studio in your city to capture your special moments today!',
+                copyright: '© 2026 OH SNAP! Photobox. All rights reserved.' 
+            }
+        };
+
+        let cms = defaultCMS;
+        let hasInitialLocal = false;
+        try {
+            const parsed = JSON.parse(localStorage.getItem('ohsnap_cms_data'));
+            if (parsed && typeof parsed === 'object') {
+                cms = parsed;
+                hasInitialLocal = true;
+            }
+        } catch (e) {}
+
+        let lastRenderedSignature = '';
+        let lastStudioSig = '';
+        let lastPromoSig = '';
+        let lastVideoSig = '';
+
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('navContainer').classList.toggle('active');
+        });
+
+        function scrollSlider(elementId, direction) {
+            const container = document.getElementById(elementId);
+            const scrollAmount = 260 * direction;
+            container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+
+        function attachAutoPauseListeners() {
+            const allVideos = document.querySelectorAll('.auto-pause-video');
+            allVideos.forEach(vid => {
+                vid.onplay = () => {
+                    allVideos.forEach(otherVid => {
+                        if (otherVid !== vid) otherVid.pause();
+                    });
+                };
+            });
+        }
+
+        function applyCMS() {
+            if (!cms) return;
+            if (cms.colors) {
+                document.documentElement.style.setProperty('--primary', cms.colors.primary || '#ff1493');
+                document.documentElement.style.setProperty('--secondary', cms.colors.secondary || '#2b4c7e');
+                document.documentElement.style.setProperty('--bg-main', cms.colors.bg || '#fff0f5');
+                document.documentElement.style.setProperty('--footer-bg', cms.colors.footer || '#18171d');
+            }
+            if (cms.banners) {
+                if (cms.banners.home) {
+                    const b = cms.banners.home;
+                    document.getElementById('heroTitle').innerHTML = currentLang === 'en' ? (b.titleEn || b.titleId || '') : (b.titleId || '');
+                    document.getElementById('heroSub').textContent = currentLang === 'en' ? (b.subEn || b.subId || '') : (b.subId || '');
+                    if (b.imgUrl && b.imgUrl.trim() !== '' && b.imgUrl !== 'images/hero-banner.jpg') {
+                        const targetBg = `url("${b.imgUrl}")`;
+                        if (document.getElementById('heroBannerBg').style.backgroundImage !== targetBg) {
+                            document.getElementById('heroBannerBg').style.backgroundImage = targetBg;
+                        }
+                    } else {
+                        document.getElementById('heroBannerBg').style.backgroundImage = 'none';
+                    }
+                }
+                if (cms.banners.about) {
+                    const ab = cms.banners.about;
+                    const aboutTitleEl = document.getElementById('aboutTitle');
+                    const aboutSubEl = document.getElementById('aboutSub');
+                    const aboutBtnEl = document.getElementById('aboutBtn');
+                    if (aboutTitleEl && (ab.titleId || ab.titleEn)) {
+                        aboutTitleEl.innerHTML = currentLang === 'en' ? (ab.titleEn || ab.titleId) : ab.titleId;
+                    }
+                    if (aboutSubEl && (ab.subId || ab.subEn)) {
+                        aboutSubEl.textContent = currentLang === 'en' ? (ab.subEn || ab.subId) : ab.subId;
+                    }
+                    if (aboutBtnEl && (ab.btnId || ab.btnEn)) {
+                        aboutBtnEl.textContent = currentLang === 'en' ? (ab.btnEn || ab.btnId) : ab.btnId;
+                    }
+                }
+                const aboutImgEl = document.getElementById('aboutImg');
+                if (aboutImgEl) {
+                    let aboutSrc = '';
+                    if (cms.banners.about && cms.banners.about.imgUrl && cms.banners.about.imgUrl.trim() !== '' && cms.banners.about.imgUrl !== 'images/about-img.jpg') {
+                        aboutSrc = cms.banners.about.imgUrl;
+                    } else if (cms.banners.home && cms.banners.home.aboutImgUrl && cms.banners.home.aboutImgUrl.trim() !== '' && cms.banners.home.aboutImgUrl !== 'images/about-img.jpg') {
+                        aboutSrc = cms.banners.home.aboutImgUrl;
+                    }
+                    if (aboutSrc) {
+                        if (aboutImgEl.getAttribute('src') !== aboutSrc) {
+                            aboutImgEl.src = aboutSrc;
+                        }
+                        aboutImgEl.style.display = 'block';
+                        aboutImgEl.style.opacity = '1';
+                    } else {
+                        aboutImgEl.style.opacity = '0';
+                    }
+                }
+            }
+
+            const t = Object.assign({}, defaultCMS.titles, (cms && cms.titles) ? cms.titles : {});
+            const isEn = currentLang === 'en';
+            document.getElementById('secPromoTitle').innerHTML = isEn ? (t.titlePromoEn || t.titlePromoId || defaultCMS.titles.titlePromoEn) : (t.titlePromoId || defaultCMS.titles.titlePromoId);
+            document.getElementById('secPromoSub').textContent = isEn ? (t.subPromoEn || t.subPromoId || defaultCMS.titles.subPromoEn) : (t.subPromoId || defaultCMS.titles.subPromoId);
+            document.getElementById('secStudioTitle').innerHTML = isEn ? (t.titleStudioEn || t.titleStudioId || defaultCMS.titles.titleStudioEn) : (t.titleStudioId || defaultCMS.titles.titleStudioId);
+            document.getElementById('secStudioSub').textContent = isEn ? (t.subStudioEn || t.subStudioId || defaultCMS.titles.subStudioEn) : (t.subStudioId || defaultCMS.titles.subStudioId);
+            document.getElementById('secVideoTitle').innerHTML = isEn ? (t.titleVideoEn || t.titleVideoId || defaultCMS.titles.titleVideoEn) : (t.titleVideoId || defaultCMS.titles.titleVideoId);
+            document.getElementById('secVideoSub').textContent = isEn ? (t.subVideoEn || t.subVideoId || defaultCMS.titles.subVideoEn) : (t.subVideoId || defaultCMS.titles.subVideoId);
+
+            // Render Studios (hanya jika data studio berubah agar gambar tidak berkedip)
+            const studiosList = (cms.studios && cms.studios.length > 0) ? cms.studios : defaultCMS.studios;
+            const currentStudioSig = JSON.stringify(studiosList);
+            if (currentStudioSig !== lastStudioSig) {
+                lastStudioSig = currentStudioSig;
+                document.getElementById('studioGrid').innerHTML = studiosList.map(s => `
+                    <div class="slide-item-studio">
+                        <div class="card-item">
+                            ${s.img && s.img.trim() !== '' ? `<div style="width:100%; height:460px; overflow:hidden; background:#fff;"><img src="${escHtml(s.img)}" alt="${escHtml(s.title)}" style="width: 100%; height: 460px; object-fit: cover; display:block;" onerror="this.parentElement.outerHTML='<div class=\\'empty-portrait-box\\'></div>'"></div>` : `<div class="empty-portrait-box"></div>`}
+                            <div class="card-body">
+                                <div>
+                                    <h3>${escHtml(s.title || 'Nama Studio')}</h3>
+                                    <p>${escHtml(s.desc || 'Deskripsi studio')}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Render Promos (hanya jika data promo berubah)
+            const promosList = (cms.promos && cms.promos.length > 0) ? cms.promos : defaultCMS.promos;
+            const currentPromoSig = JSON.stringify(promosList);
+            if (currentPromoSig !== lastPromoSig) {
+                lastPromoSig = currentPromoSig;
+                document.getElementById('promoGrid').innerHTML = promosList.map(p => `
+                    <div class="slide-item-promo">
+                        <div class="card-item">
+                            ${p.img && p.img.trim() !== '' ? `<div style="width:100%; height:460px; overflow:hidden; background:#fff;"><img src="${escHtml(p.img)}" alt="${escHtml(p.title)}" style="width: 100%; height: 460px; object-fit: cover; display:block;" onerror="this.parentElement.outerHTML='<div class=\\'empty-portrait-box\\'></div>'"></div>` : `<div class="empty-portrait-box"></div>`}
+                            <div class="card-body">
+                                <div>
+                                    <span class="badge-tag">${escHtml(p.badge || 'PROMO')}</span>
+                                    <h3>${escHtml(p.title || 'Judul Promo')}</h3>
+                                    <p>${escHtml(p.desc || 'Keterangan promo')}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Render Videos (hanya jika data video berubah agar video tidak reload saat ganti bahasa)
+            const videosList = (cms.videos && cms.videos.length > 0) ? cms.videos : defaultCMS.videos;
+            const currentVideoSig = JSON.stringify(videosList);
+            if (currentVideoSig !== lastVideoSig) {
+                lastVideoSig = currentVideoSig;
+                document.getElementById('videoGrid').innerHTML = videosList.map(v => {
+                    let mediaContent = `<div class="empty-portrait-video"></div>`;
+                    let rawUrl = (v && v.url) ? String(v.url).trim() : '';
+
+                    if (rawUrl !== '' && rawUrl !== '#' && rawUrl !== 'images/video-1.mp4' && !rawUrl.startsWith('[')) {
+                        let cleanUrl = rawUrl.replace(/^#/, '').trim();
+                        if (cleanUrl.startsWith('idb://')) {
+                            const idbKey = cleanUrl.replace('idb://', '');
+                            mediaContent = `<div class="empty-portrait-video" data-idb-slot="${escHtml(idbKey)}"></div>`;
+                        } else if (cleanUrl.includes('tiktok.com') || cleanUrl.includes('instagram.com')) {
+                            let platformName = cleanUrl.includes('tiktok.com') ? 'TikTok' : 'Instagram';
+                            mediaContent = `<div style="position:relative; width:100%; height:480px; border-radius:24px; border:2px solid #fbcfe8; overflow:hidden; background:#111; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                                <div style="position:absolute; inset:0; background:linear-gradient(135deg, #2b4c7e 0%, #ff1493 100%); opacity:0.85;"></div>
+                                <div style="position:relative; z-index:2; padding:20px; display:flex; flex-direction:column; align-items:center; gap:14px;">
+                                    <div style="width:60px; height:60px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.5rem; box-shadow:0 6px 20px rgba(0,0,0,0.4);">▶</div>
+                                    <span style="color:#fff; font-weight:700; font-size:1.05rem; text-shadow:0 2px 8px rgba(0,0,0,0.8);">Tonton di ${platformName}</span>
+                                    <a href="${escHtml(cleanUrl)}" target="_blank" style="background:#fff; color:var(--secondary); padding:10px 24px; border-radius:50px; font-weight:800; font-size:0.9rem; text-decoration:none; box-shadow:0 4px 15px rgba(0,0,0,0.3); transition:0.2s;">Buka Tautan →</a>
+                                </div>
+                            </div>`;
+                        } else if (cleanUrl.endsWith('.mp4') || cleanUrl.startsWith('blob:') || cleanUrl.startsWith('data:video') || cleanUrl.startsWith('http')) {
+                            mediaContent = `<video class="auto-pause-video" src="${escHtml(cleanUrl)}" preload="metadata" controls playsinline loop style="width: 100%; height: 480px; object-fit: cover; border-radius: 24px; border: 2px solid #fbcfe8; background:#000;" onerror="this.outerHTML='<div class=\\'empty-portrait-video\\'></div>'"></video>`;
+                        }
+                    }
+                    return `<div class="slide-item-video">${mediaContent}</div>`;
+                }).join('');
+
+                attachAutoPauseListeners();
+
+                setTimeout(async () => {
+                    const idbSlots = document.querySelectorAll('[data-idb-slot]');
+                    for (const slotEl of idbSlots) {
+                        const key = slotEl.getAttribute('data-idb-slot');
+                        const record = await getMediaFromIDB(key);
+                        if (record && (record instanceof Blob || record.buffer)) {
+                            const blob = (record instanceof Blob) ? record : new Blob([record.buffer], { type: record.type || 'video/mp4' });
+                            const blobUrl = URL.createObjectURL(blob);
+                            slotEl.outerHTML = `<video class="auto-pause-video" src="${blobUrl}" preload="metadata" controls playsinline loop style="width: 100%; height: 480px; object-fit: cover; border-radius: 24px; border: 2px solid #fbcfe8; background:#000;"></video>`;
+                        }
+                    }
+                    attachAutoPauseListeners();
+                }, 50);
+            }
+
+            if (cms && cms.footer) {
+                document.getElementById('fBrand').textContent = cms.footer.brand;
+                document.getElementById('fBranches').textContent = cms.footer.branches;
+                const ig = document.getElementById('fIg'); if(ig) { ig.textContent = cms.footer.igName; ig.href = cms.footer.igUrl || '#'; }
+                const tt = document.getElementById('fTt'); if(tt) { tt.textContent = cms.footer.ttName; tt.href = cms.footer.ttUrl || '#'; }
+                
+                document.getElementById('fCardTitle').textContent = currentLang === 'en' ? (cms.footer.cardTitleEn || 'Find nearby OH SNAP! Studio') : (cms.footer.cardTitleId || 'Find nearby OH SNAP! Studio');
+                document.getElementById('fCardDesc').textContent = currentLang === 'en' ? (cms.footer.cardDescEn || 'Find the nearest booth and studio in your city to capture your special moments today!') : (cms.footer.cardDescId || 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!');
+                document.getElementById('fCopy').textContent = cms.footer.copyright;
+            }
+
+            try { lastRenderedSignature = JSON.stringify(cms) + '_' + currentLang; } catch (e) {}
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('siteLang', lang);
+            document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+            document.getElementById('btnID').classList.toggle('active', lang === 'id');
+            document.querySelectorAll('[data-en]').forEach(el => {
+                el.innerHTML = el.getAttribute('data-' + lang);
+            });
+            applyCMS();
+        }
+
+        if (hasInitialLocal) {
+            setLanguage(currentLang);
+        }
+
+        async function syncLatestCMS() {
+            let newestLocal = null;
+            const localSaved = localStorage.getItem('ohsnap_cms_data');
+            if (localSaved) {
+                try {
+                    const parsed = JSON.parse(localSaved);
+                    if (parsed) {
+                        newestLocal = parsed;
+                        if (JSON.stringify(parsed) + '_' + currentLang !== lastRenderedSignature) {
+                            cms = parsed;
+                            setLanguage(currentLang);
+                        }
+                    }
+                } catch (e) {}
+            }
+            const idbBackup = await getMediaFromIDB('cms_full_backup');
+            if (idbBackup && (!newestLocal || Number(idbBackup.lastUpdated || 0) > Number(newestLocal.lastUpdated || 0))) {
+                newestLocal = idbBackup;
+                if (JSON.stringify(idbBackup) + '_' + currentLang !== lastRenderedSignature) {
+                    cms = idbBackup;
+                    setLanguage(currentLang);
+                }
+            }
+            const cloudCms = await OhSnapCloud.pullIfNewer();
+            if (cloudCms) {
+                const cloudTime = Number(cloudCms.lastUpdated || 0);
+                const localTime = Number((newestLocal && newestLocal.lastUpdated) || 0);
+                const chosen = (newestLocal && localTime > cloudTime) ? newestLocal : cloudCms;
+                if (chosen === newestLocal && localTime > cloudTime) {
+                    try { localStorage.setItem('ohsnap_cms_data', JSON.stringify(newestLocal)); } catch (e) {}
+                }
+                if (JSON.stringify(chosen) + '_' + currentLang !== lastRenderedSignature) {
+                    cms = chosen;
+                    setLanguage(currentLang);
+                }
+            } else if (!lastRenderedSignature) {
+                setLanguage(currentLang);
+            }
+            document.documentElement.classList.remove('awaiting-first-cloud');
+        }
+
+        window.addEventListener('storage', () => { syncLatestCMS(); });
+        window.addEventListener('focus', () => { syncLatestCMS(); });
+        syncLatestCMS();
+    </script>
+</body>
+</html>

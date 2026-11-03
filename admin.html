@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - OH SNAP! Photobox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff1493;
+            --secondary: #2b4c7e;
+            --bg-body: #f8fafc;
+            --sidebar-bg: #18171d;
+            --border-color: #e2e8f0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { display: flex; min-height: 100vh; background: var(--bg-body); color: var(--secondary); overflow-x: hidden; }
+
+        .sidebar {
+            width: 270px; background: var(--sidebar-bg); color: #ffffff; display: flex; flex-direction: column;
+            position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; z-index: 1000; transition: transform 0.3s ease;
+        }
+        .sidebar-header { padding: 20px; background: var(--primary); display: flex; align-items: center; gap: 12px; }
+        .sidebar-header img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; object-fit: contain; }
+        .sidebar-header h2 { font-size: 1.1rem; font-weight: 800; color: #fff; }
+        
+        .sidebar-menu { padding: 12px 10px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+        .menu-btn {
+            background: transparent; border: none; color: #9ca3af; text-align: left; padding: 10px 14px;
+            border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s;
+        }
+        .menu-btn:hover { background: rgba(255, 20, 147, 0.1); color: #fff; }
+        .menu-btn.active { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(255, 20, 147, 0.3); }
+        
+        .sidebar-footer { padding: 15px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 8px; }
+        .btn-view-site, .btn-logout {
+            display: block; text-align: center; padding: 10px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; text-decoration: none; cursor: pointer; border: none;
+        }
+        .btn-view-site { background: var(--secondary); color: #fff; }
+        .btn-logout { background: #ef4444; color: #fff; }
+
+        .mobile-header-bar {
+            display: none; position: fixed; top: 0; left: 0; right: 0; height: 60px;
+            background: var(--sidebar-bg); z-index: 999; align-items: center; justify-content: space-between; padding: 0 20px; color: #fff; border-bottom: 2px solid var(--primary);
+        }
+        .mobile-toggle-btn { background: var(--primary); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; }
+
+        .main-content { margin-left: 270px; flex: 1; padding: 25px 30px; max-width: calc(100% - 270px); }
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center; background: #ffffff;
+            padding: 16px 24px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .top-bar h1 { font-size: 1.25rem; color: var(--secondary); font-weight: 700; }
+        .btn-save-all {
+            background: var(--primary); color: #fff; border: none; padding: 10px 22px; border-radius: 50px;
+            font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 12px rgba(255, 20, 147, 0.25);
+        }
+
+        .admin-section {
+            display: none !important; background: #ffffff; border: 1px solid var(--border-color);
+            border-radius: 14px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        }
+        .admin-section.active { display: block !important; }
+        .sec-header {
+            display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);
+            padding-bottom: 14px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+        }
+        .sec-header h2 { font-size: 1.15rem; color: var(--secondary); font-weight: 700; }
+        .badge-min { background: #fdf2f8; color: var(--primary); padding: 4px 10px; border-radius: 50px; font-size: 0.78rem; font-weight: 700; border: 1px solid #fbcfe8; }
+
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 16px; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 0.82rem; font-weight: 700; color: var(--secondary); margin-bottom: 6px; }
+        .form-group input[type="text"], .form-group input[type="password"], .form-group select, .form-group textarea {
+            width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.88rem; outline: none; background: #fff;
+        }
+        .form-group textarea { resize: vertical; min-height: 70px; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
+
+        .password-container { position: relative; display: flex; align-items: center; }
+        .password-container input { width: 100%; padding-right: 40px; }
+        .toggle-password {
+            position: absolute; right: 10px; background: none; border: none; cursor: pointer; font-size: 1rem; color: #64748b;
+        }
+
+        .input-with-clear { display: flex; gap: 8px; align-items: center; }
+        .btn-clear-input {
+            background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 9px 12px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 0.8rem;
+        }
+        .btn-clear-input:hover { background: #dc2626; color: #fff; }
+
+        .dynamic-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; margin-top: 15px; }
+        .item-card { background: #fdf2f8; border: 1px solid #fbcfe8; border-radius: 12px; padding: 16px; position: relative; }
+        .item-card h4 { margin-bottom: 10px; color: var(--primary); font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; font-weight: 700; }
+        
+        .media-preview-box {
+            margin-top: 10px; border-radius: 10px; overflow: hidden; border: 2px solid #fbcfe8; background: #fff;
+            display: flex; align-items: center; gap: 12px; padding: 8px 12px; font-size: 0.8rem; color: #10b981; font-weight: 700;
+        }
+        .media-preview-box img { width: 65px; height: 65px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; flex-shrink: 0; }
+        .media-preview-box video { width: 65px; height: 95px; object-fit: cover; border-radius: 8px; background: #000; flex-shrink: 0; }
+
+        .btn-add { background: #10b981; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; }
+        .btn-remove { background: #ef4444; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.75rem; }
+        .order-nav-btn { background: var(--secondary); color: #fff; border: none; padding: 3px 8px; border-radius: 4px; font-weight: 700; cursor: pointer; font-size: 0.7rem; margin-right: 4px; }
+
+        .color-picker-box { display: flex; align-items: center; gap: 12px; background: #fdf2f8; padding: 12px; border-radius: 10px; border: 1px solid #fbcfe8; }
+        .color-wheel { width: 45px; height: 45px; border: none; border-radius: 50%; cursor: pointer; background: transparent; }
+
+        .table-responsive { overflow-x: auto; background: #fff; border-radius: 10px; border: 1px solid var(--border-color); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.82rem; white-space: nowrap; }
+        th, td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); text-align: left; vertical-align: middle; }
+        th { background: var(--secondary); color: #fff; font-weight: 600; }
+        tr.row-belum td { background-color: #fef2f2; }
+        tr.row-sudah td { background-color: #f0fdf4; }
+
+        .btn-toggle-status { border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; color: #fff; }
+        .btn-status-belum { background: #ef4444; }
+        .btn-status-sudah { background: #10b981; }
+        
+        .link-drive { color: var(--primary); font-weight: 700; text-decoration: none; }
+        .link-drive:hover { text-decoration: underline; }
+        
+        .action-btns-group { display: flex; gap: 5px; }
+        .btn-action-wa { background: #25d366; color: #fff; text-decoration: none; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-align: center; display: inline-block; }
+        .btn-action-email { background: #3b82f6; color: #fff; text-decoration: none; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-align: center; display: inline-block; }
+
+        .toast-notif {
+            position: fixed; bottom: 25px; right: 25px; background: #10b981; color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; box-shadow: 0 8px 25px rgba(0,0,0,0.15); display: none; z-index: 9999;
+        }
+
+        @media screen and (max-width: 768px) {
+            .mobile-header-bar { display: flex; }
+            .sidebar { transform: translateX(-100%); width: 260px; padding-top: 60px; }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; max-width: 100%; padding: 80px 15px 25px 15px; }
+            .top-bar { flex-direction: column; gap: 12px; align-items: stretch; text-align: center; }
+        }
+    </style>
+    <script src="cms-cloud.js"></script>
+    <script>
+        // GERBANG PROTEKSI KETAT: Tolak akses ketik URL manual tanpa lewat login.html
+        (function() {
+            localStorage.removeItem('ohsnap_admin_logged');
+
+            const hasTicket = sessionStorage.getItem('ohsnap_login_ticket');
+            const loggedUser = sessionStorage.getItem('ohsnap_admin_logged');
+            const isActiveTab = sessionStorage.getItem('ohsnap_admin_active') === '1';
+
+            const navEntries = (window.performance && performance.getEntriesByType) ? performance.getEntriesByType('navigation') : [];
+            const navType = (navEntries && navEntries[0]) ? navEntries[0].type : ((window.performance && performance.navigation && performance.navigation.type === 1) ? 'reload' : 'navigate');
+
+            if (hasTicket && loggedUser) {
+                // Masuk sah setelah klik tombol login di login.html
+                sessionStorage.removeItem('ohsnap_login_ticket');
+                sessionStorage.setItem('ohsnap_admin_active', '1');
+            } else if (navType === 'reload' && isActiveTab && loggedUser) {
+                // Admin me-refresh (F5 / tombol muat ulang) halaman dashboard yang sedang aktif
+                sessionStorage.setItem('ohsnap_admin_active', '1');
+            } else {
+                // Akses ketik URL manual di kolom browser / buka tab baru -> langsung lempar ke login.html
+                sessionStorage.removeItem('ohsnap_admin_logged');
+                sessionStorage.removeItem('ohsnap_admin_active');
+                sessionStorage.removeItem('ohsnap_login_ticket');
+                document.documentElement.style.display = 'none';
+                window.location.replace('login.html');
+            }
+        })();
+    </script>
+</head>
+<body>
+
+    <div class="mobile-header-bar">
+        <h2>OH SNAP! ADMIN</h2>
+        <button class="mobile-toggle-btn" onclick="toggleMobileSidebar()">☰ Menu</button>
+    </div>
+
+    <aside class="sidebar" id="sidebarEl">
+        <div class="sidebar-header">
+            <img src="images/logo-icon.jpg" alt="Logo" onerror="this.style.display='none'">
+            <h2>OH SNAP! ADMIN</h2>
+        </div>
+        <div class="sidebar-menu">
+            <button class="menu-btn active" onclick="switchTab('sec-banner', this, event)">🖼️ 1. Banner & Hero Title</button>
+            <button class="menu-btn" onclick="switchTab('sec-video', this, event)">🎬 2. Video Feed (Min: 5)</button>
+            <button class="menu-btn" onclick="switchTab('sec-studio', this, event)">📸 3. Suasana Studio (Min: 4)</button>
+            <button class="menu-btn" onclick="switchTab('sec-promo', this, event)">🏷️ 4. Kelola Promo (Min: 3)</button>
+            <button class="menu-btn" onclick="switchTab('sec-frame', this, event)">🎞️ 5. Frame Layout (Min: 5)</button>
+            <button class="menu-btn" onclick="switchTab('sec-layanan', this, event)">✨ 6. Layanan (Min: 3)</button>
+            <button class="menu-btn" onclick="switchTab('sec-lokasi', this, event)">📍 7. Lokasi Cabang (Min: 5)</button>
+            <button class="menu-btn" onclick="switchTab('sec-footer', this, event)">🦶 8. Pengaturan Footer</button>
+            <button class="menu-btn" onclick="switchTab('sec-colors', this, event)">🎨 9. Warna Frontend</button>
+            <button class="menu-btn" onclick="switchTab('sec-resend', this, event)">📩 10. Resend Softcopy</button>
+            <button class="menu-btn" onclick="switchTab('sec-admins', this, event)">👤 11. Kelola Admin</button>
+        </div>
+        <div class="sidebar-footer">
+            <a href="index.html" target="_blank" class="btn-view-site">🌐 Lihat Website Frontend</a>
+            <button class="btn-logout" onclick="logoutAdmin()">🚪 Keluar (Logout)</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <h1 id="pageTitle">Pengaturan Banner & Hero Title</h1>
+            <button class="btn-save-all" onclick="saveAllCMS()">💾 Simpan Semua Perubahan</button>
+        </div>
+
+        <!-- 1. BANNER & HERO TITLE -->
+        <section id="sec-banner" class="admin-section active">
+            <div class="sec-header">
+                <h2>Pengaturan Banner & Halaman Utama</h2>
+                <span class="badge-min">Dropdown Halaman</span>
+            </div>
+            <div class="form-group" style="max-width: 450px;">
+                <label>Pilih Bagian yang Ingin Diubah:</label>
+                <select id="bannerPageSelect" onchange="onBannerPageChange()">
+                    <option value="home">Halaman Home (Beranda)</option>
+                    <option value="about">Halaman About Our Story (Home)</option>
+                    <option value="layanan">Halaman Layanan</option>
+                    <option value="frame">Halaman Frame</option>
+                    <option value="lokasi">Halaman Lokasi</option>
+                </select>
+            </div>
+            <div class="form-grid">
+                <div class="form-group"><label>Judul Utama (ID)</label><input type="text" id="bannerTitleId" oninput="updateBannerState()"></div>
+                <div class="form-group"><label>Judul Utama (EN)</label><input type="text" id="bannerTitleEn" oninput="updateBannerState()"></div>
+                <div class="form-group"><label>Deskripsi / Sub-Headline (ID)</label><textarea id="bannerSubId" oninput="updateBannerState()"></textarea></div>
+                <div class="form-group"><label>Deskripsi / Sub-Headline (EN)</label><textarea id="bannerSubEn" oninput="updateBannerState()"></textarea></div>
+            </div>
+
+            <div id="aboutSpecificFields" style="display: none;">
+                <div class="form-grid">
+                    <div class="form-group"><label>Teks Tombol Read More (ID)</label><input type="text" id="bannerBtnId" placeholder="Read more →" oninput="updateBannerState()"></div>
+                    <div class="form-group"><label>Teks Tombol Read More (EN)</label><input type="text" id="bannerBtnEn" placeholder="Read more →" oninput="updateBannerState()"></div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group"><label>Isi Cerita Lengkap / Full Story (ID)</label><textarea id="bannerFullId" placeholder="Tuliskan cerita lengkap..." oninput="updateBannerState()" style="min-height: 120px;"></textarea></div>
+                    <div class="form-group"><label>Isi Cerita Lengkap / Full Story (EN)</label><textarea id="bannerFullEn" placeholder="Tuliskan cerita lengkap..." oninput="updateBannerState()" style="min-height: 120px;"></textarea></div>
+                </div>
+            </div>
+
+            <div class="form-grid" style="margin-top: 15px;">
+                <div class="form-group" style="background:#fdf2f8; padding:16px; border-radius:12px; border:1px solid #fbcfe8;">
+                    <label id="bannerUploadLabel">🖼️ Upload Gambar Banner Halaman Ini (Atau Isi URL):</label>
+                    <div class="input-with-clear">
+                        <input type="text" id="bannerImgUrl" placeholder="Klik Choose File di bawah atau tempel link URL..." oninput="updateBannerImgManual(this.value)">
+                        <button type="button" class="btn-clear-input" onclick="clearBannerImg()">❌ X</button>
+                    </div>
+                    <input type="file" id="bannerFileInput" accept="image/*" style="margin-top:8px;" onchange="handleFileUpload(this)">
+                    <div id="bannerPreviewWrap"></div>
+                </div>
+
+                <div class="form-group" id="quickAboutPhotoBox" style="background:#fdf2f8; padding:16px; border-radius:12px; border:1px solid #fbcfe8;">
+                    <label>📸 Upload Foto "About Our Story" (Tampil di Beranda):</label>
+                    <div class="input-with-clear">
+                        <input type="text" id="aboutQuickImgUrl" placeholder="Klik Choose File di bawah atau tempel link URL..." oninput="updateAboutImgManual(this.value)">
+                        <button type="button" class="btn-clear-input" onclick="clearAboutImg()">❌ X</button>
+                    </div>
+                    <input type="file" id="aboutQuickFileInput" accept="image/*" style="margin-top:8px;" onchange="handleAboutPhotoUpload(this)">
+                    <div id="aboutPreviewWrap"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. VIDEO FEED -->
+        <section id="sec-video" class="admin-section">
+            <div class="sec-header">
+                <div><h2>Kelola Halaman Video Feed</h2><span class="badge-min">Batas Minimal: 5 Kolom</span></div>
+                <button class="btn-add" onclick="addVideoItem()">+ Tambah Video</button>
+            </div>
+            <div class="form-grid" style="background:#fdf2f8; padding:15px; border-radius:10px; border:1px solid #fbcfe8; margin-bottom:20px;">
+                <div>
+                    <div class="form-group"><label>Judul Seksi Video (ID)</label><input type="text" id="titleVideoId" oninput="updateTitlesState()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Judul Seksi Video (EN)</label><input type="text" id="titleVideoEn" oninput="updateTitlesState()"></div>
+                </div>
+                <div>
+                    <div class="form-group"><label>Subjudul Seksi Video (ID)</label><input type="text" id="subVideoId" oninput="updateTitlesState()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Subjudul Seksi Video (EN)</label><input type="text" id="subVideoEn" oninput="updateTitlesState()"></div>
+                </div>
+            </div>
+            <div id="videoListContainer" class="dynamic-list"></div>
+        </section>
+
+        <!-- 3. SUASANA STUDIO -->
+        <section id="sec-studio" class="admin-section">
+            <div class="sec-header">
+                <div><h2>Kelola Suasana Studio</h2><span class="badge-min">Batas Minimal: 4 Kolom</span></div>
+                <button class="btn-add" onclick="addStudioItem()">+ Tambah Studio</button>
+            </div>
+            <div class="form-grid" style="background:#fdf2f8; padding:15px; border-radius:10px; border:1px solid #fbcfe8; margin-bottom:20px;">
+                <div>
+                    <div class="form-group"><label>Judul Seksi Studio (ID)</label><input type="text" id="titleStudioId" oninput="updateTitlesState()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Judul Seksi Studio (EN)</label><input type="text" id="titleStudioEn" oninput="updateTitlesState()"></div>
+                </div>
+                <div>
+                    <div class="form-group"><label>Subjudul Seksi Studio (ID)</label><input type="text" id="subStudioId" oninput="updateTitlesState()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Subjudul Seksi Studio (EN)</label><input type="text" id="subStudioEn" oninput="updateTitlesState()"></div>
+                </div>
+            </div>
+            <div id="studioListContainer" class="dynamic-list"></div>
+        </section>
+
+        <!-- 4. KELOLA PROMO -->
+        <section id="sec-promo" class="admin-section">
+            <div class="sec-header">
+                <div><h2>Kelola Promo</h2><span class="badge-min">Batas Minimal: 3 Kolom</span></div>
+                <button class="btn-add" onclick="addPromoItem()">+ Tambah Promo</button>
+            </div>
+            <div class="form-grid" style="background:#fdf2f8; padding:15px; border-radius:10px; border:1px solid #fbcfe8; margin-bottom:20px;">
+                <div>
+                    <div class="form-group"><label>Judul Seksi Promo (ID)</label><input type="text" id="titlePromoId" oninput="updateTitlesState()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Judul Seksi Promo (EN)</label><input type="text" id="titlePromoEn" oninput="updateTitlesState()"></div>
+                </div>
+                <div>
+                    <div class="form-group"><label>Subjudul Seksi Promo (ID)</label><input type="text" id="subPromoId" oninput="updateTitlesState()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Subjudul Seksi Promo (EN)</label><input type="text" id="subPromoEn" oninput="updateTitlesState()"></div>
+                </div>
+            </div>
+            <div id="promoListContainer" class="dynamic-list"></div>
+        </section>
+
+        <!-- 5. FRAME LAYOUT -->
+        <section id="sec-frame" class="admin-section">
+            <div class="sec-header">
+                <div><h2>Kelola Frame Layout</h2><span class="badge-min">Batas Minimal: 5 Kolom</span></div>
+                <button class="btn-add" onclick="addFrameItem()">+ Tambah Frame</button>
+            </div>
+            <div id="frameListContainer" class="dynamic-list"></div>
+        </section>
+
+        <!-- 6. LAYANAN -->
+        <section id="sec-layanan" class="admin-section">
+            <div class="sec-header">
+                <div><h2>Kelola Layanan</h2><span class="badge-min">Batas Minimal: 3 Kolom</span></div>
+                <button class="btn-add" onclick="addServiceItem()">+ Tambah Layanan</button>
+            </div>
+            <div id="serviceListContainer" class="dynamic-list"></div>
+        </section>
+
+        <!-- 7. LOKASI CABANG -->
+        <section id="sec-lokasi" class="admin-section">
+            <div class="sec-header">
+                <div><h2>Kelola Lokasi Cabang</h2><span class="badge-min">Batas Minimal: 5 Kolom</span></div>
+                <button class="btn-add" onclick="addLocationItem()">+ Tambah Lokasi</button>
+            </div>
+            <div id="locationListContainer" class="dynamic-list"></div>
+        </section>
+
+        <!-- 8. FOOTER -->
+        <section id="sec-footer" class="admin-section">
+            <div class="sec-header"><h2>Kelola Informasi Footer (ID & EN)</h2></div>
+            <div class="form-grid">
+                <div class="form-group"><label>Nama Grup Perusahaan</label><input type="text" id="footerBrand" oninput="updateFooterState()"></div>
+                <div class="form-group"><label>Daftar Cabang</label><textarea id="footerBranches" oninput="updateFooterState()"></textarea></div>
+                <div class="form-group"><label>IG Name</label><input type="text" id="footerIgName" oninput="updateFooterState()"></div>
+                <div class="form-group"><label>IG URL</label><input type="text" id="footerIgUrl" oninput="updateFooterState()"></div>
+                <div class="form-group"><label>TikTok Name</label><input type="text" id="footerTtName" oninput="updateFooterState()"></div>
+                <div class="form-group"><label>TikTok URL</label><input type="text" id="footerTtUrl" oninput="updateFooterState()"></div>
+                <div class="form-group"><label>Judul Kartu Lokasi (ID)</label><input type="text" id="footerCardTitleId" oninput="updateFooterState()"></div>
+                <div class="form-group"><label>Judul Kartu Lokasi (EN)</label><input type="text" id="footerCardTitleEn" oninput="updateFooterState()"></div>
+                <div class="form-group"><label>Deskripsi Kartu Lokasi (ID)</label><textarea id="footerCardDescId" oninput="updateFooterState()"></textarea></div>
+                <div class="form-group"><label>Deskripsi Kartu Lokasi (EN)</label><textarea id="footerCardDescEn" oninput="updateFooterState()"></textarea></div>
+                <div class="form-group"><label>Copyright</label><input type="text" id="footerCopyright" oninput="updateFooterState()"></div>
+            </div>
+        </section>
+
+        <!-- 9. WARNA FRONTEND -->
+        <section id="sec-colors" class="admin-section">
+            <div class="sec-header"><h2>Cakram Warna Frontend</h2><button class="btn-remove" style="background:var(--secondary);" onclick="resetDefaultColors()">🔄 Reset Default</button></div>
+            <div class="form-grid">
+                <div class="color-picker-box"><input type="color" id="pickerPrimary" class="color-wheel" oninput="syncColor('Primary', this.value)"><div style="flex:1;"><label>Warna Utama</label><input type="text" id="hexPrimary" oninput="syncColor('Primary', this.value)"></div></div>
+                <div class="color-picker-box"><input type="color" id="pickerSecondary" class="color-wheel" oninput="syncColor('Secondary', this.value)"><div style="flex:1;"><label>Warna Teks</label><input type="text" id="hexSecondary" oninput="syncColor('Secondary', this.value)"></div></div>
+                <div class="color-picker-box"><input type="color" id="pickerBg" class="color-wheel" oninput="syncColor('Bg', this.value)"><div style="flex:1;"><label>Warna Background</label><input type="text" id="hexBg" oninput="syncColor('Bg', this.value)"></div></div>
+                <div class="color-picker-box"><input type="color" id="pickerFooter" class="color-wheel" oninput="syncColor('Footer', this.value)"><div style="flex:1;"><label>Warna Footer</label><input type="text" id="hexFooter" oninput="syncColor('Footer', this.value)"></div></div>
+            </div>
+        </section>
+
+        <!-- 10. RESEND SOFTCOPY -->
+        <section id="sec-resend" class="admin-section">
+            <div class="sec-header">
+                <div><h2>Permintaan Resend Softcopy (Spreadsheet)</h2></div>
+                <button class="btn-add" onclick="loadResendData()">🔄 Refresh Data Spreadsheet</button>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Tgl Masuk</th>
+                            <th>Jam Masuk</th>
+                            <th>Tgl Foto</th>
+                            <th>Jam Foto</th>
+                            <th>Nama</th>
+                            <th>No HP</th>
+                            <th>Email</th>
+                            <th>Cabang</th>
+                            <th>Upload Foto</th>
+                            <th>Aksi Kirim</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resendTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 11. ADMIN -->
+        <section id="sec-admins" class="admin-section">
+            <div class="sec-header"><h2>Kelola Admin (Akun Tidak Terbatas)</h2></div>
+            <div class="form-grid" style="background:#fdf2f8; padding:18px; border-radius:12px; border:1px solid #fbcfe8;">
+                <div class="form-group"><label>Nama</label><input type="text" id="newAdminName" placeholder="Nama Admin" autocomplete="off"></div>
+                <div class="form-group"><label>Username</label><input type="text" id="newAdminUser" placeholder="username_unik" autocomplete="off"></div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="password-container">
+                        <input type="password" id="newAdminPass" placeholder="password" autocomplete="new-password">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newAdminPass', this)">👁️</button>
+                    </div>
+                </div>
+                <div class="form-group" style="display:flex; align-items:flex-end;"><button class="btn-add" style="width:100%;" onclick="addNewAdmin()">+ Tambah Akun</button></div>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nama</th>
+                            <th>Username</th>
+                            <th>Password</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast-notif">✅ Berhasil disimpan!</div>
+
+    <script>
+        // Proteksi Login Admin
+        if (!sessionStorage.getItem('ohsnap_admin_logged')) {
+            window.location.replace('login.html');
+        }
+
+        (function() {
+            const savedTab = sessionStorage.getItem('activeAdminTab');
+            if (savedTab) {
+                const targetSec = document.getElementById(savedTab);
+                const targetBtn = document.querySelector(`button[onclick*="${savedTab}"]`);
+                if (targetSec && targetBtn) {
+                    document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+                    document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+                    targetSec.classList.add('active');
+                    targetBtn.classList.add('active');
+                    const titleText = targetBtn.textContent.replace(/^[^\s]+\s\d+\.\s/, '');
+                    const titleEl = document.getElementById('pageTitle');
+                    if (titleEl) titleEl.textContent = titleText;
+                }
+            }
+        })();
+
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyum2HVg2InZDhEyeata3I2hTbPUQzzqyKHsEtgA9Z3vRCF2CeTjwzGTCHd4tszlOMm/exec';
+        const SUPABASE_URL = 'https://kbkayevpbeijuuufnrgt.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_AG1wxrYq1moobWYJjC6htQ_TB-Siffl';
+
+        // Helper agar tanda kutip ganda (") di dalam input tidak memotong teks HTML
+        function escAttr(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function openMediaDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open('ohsnap_media_db', 2);
+                req.onupgradeneeded = function(e) {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('media')) {
+                        db.createObjectStore('media');
+                    }
+                };
+                req.onsuccess = function(e) { resolve(e.target.result); };
+                req.onerror = function(e) { reject(e.target.error); };
+            });
+        }
+
+        async function saveVideoBufferToIDB(key, file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const arrayBuffer = e.target.result;
+                        const db = await openMediaDB();
+                        const tx = db.transaction('media', 'readwrite');
+                        tx.objectStore('media').put({
+                            buffer: arrayBuffer,
+                            type: file.type || 'video/mp4',
+                            name: file.name
+                        }, key);
+                        tx.oncomplete = () => resolve();
+                        tx.onerror = (err) => reject(err.target.error);
+                    } catch (err) {
+                        reject(err);
+                    }
+                };
+                reader.onerror = (err) => reject(err);
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        async function getMediaFromIDB(key) {
+            try {
+                const db = await openMediaDB();
+                return new Promise((resolve) => {
+                    const tx = db.transaction('media', 'readonly');
+                    const req = tx.objectStore('media').get(key);
+                    req.onsuccess = () => resolve(req.result || null);
+                    req.onerror = () => resolve(null);
+                });
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function saveCMSBackupToIDB(dataObj) {
+            try {
+                const db = await openMediaDB();
+                const tx = db.transaction('media', 'readwrite');
+                tx.objectStore('media').put(JSON.parse(JSON.stringify(dataObj)), 'cms_full_backup');
+            } catch (e) {}
+        }
+
+        function dataURLToBlob(dataUrl) {
+            const parts = dataUrl.split(',');
+            const mime = (parts[0].match(/:(.*?);/) || [])[1] || 'image/jpeg';
+            const bstr = atob(parts[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) u8arr[n] = bstr.charCodeAt(n);
+            return new Blob([u8arr], { type: mime });
+        }
+
+        async function uploadImageToCloud(file) {
+            const compressedDataUrl = await compressImageFile(file, 1280, 0.82);
+            try {
+                const blob = dataURLToBlob(compressedDataUrl);
+                return await OhSnapCloud.upload(blob, 'img', 'jpg');
+            } catch (e) {
+                console.warn('Upload gambar ke Storage gagal, memakai fallback terkompresi:', e);
+                showToast('⚠️ Bucket ohsnap-media belum aktif di SQL, memakai penyimpanan cadangan');
+                return await compressImageFile(file, 800, 0.7);
+            }
+        }
+
+        function compressImageFile(file, maxDim = 450, quality = 0.5) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > maxDim || height > maxDim) {
+                            if (width > height) {
+                                height = Math.round((height * maxDim) / width);
+                                width = maxDim;
+                            } else {
+                                width = Math.round((width * maxDim) / height);
+                                height = maxDim;
+                            }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, width, height);
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.onerror = function() { resolve(e.target.result); };
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        const LEGACY_PLACEHOLDER_IMGS = [
+            'images/hero-banner.jpg',
+            'images/about-img.jpg',
+            'images/banner-layanan.jpg',
+            'images/banner-frame.jpg',
+            'images/banner-lokasi.jpg'
+        ];
+
+        const defaultCMS = {
+            colors: { primary: '#ff1493', secondary: '#2b4c7e', bg: '#fff0f5', footer: '#18171d' },
+            banners: {
+                home: { titleId: 'LANGSUNG CETAK BAWA PULANG', titleEn: 'INSTANT PRINT & TAKE IT HOME', subId: 'Photobox & Self-Photo Studio kekinian.', subEn: 'Trendy Photobox Studio.', imgUrl: '' },
+                about: { 
+                    titleId: 'About Our Story', titleEn: 'About Our Story', 
+                    subId: 'OH SNAP! Photobox hadir dari semangat untuk mengabadikan setiap momen hangat, spontan, dan tak terlupakan bersama orang-orang tersayang. Berawal dari konsep photobox tematik yang unik dan kreatif, kini kami hadir di berbagai pusat perbelanjaan (Mall).', 
+                    subEn: 'OH SNAP! Photobox was born from the spirit of capturing warm, spontaneous, and unforgettable moments with your favorite people...', 
+                    btnId: 'Read more →', btnEn: 'Read more →',
+                    fullId: 'OH SNAP! Photobox was born from the spirit of capturing warm, spontaneous, and unforgettable moments with your favorite people. Starting with thematic booths designed creatively, we now serve various malls across Indonesia.\n\nWith studio-grade lighting, high-resolution cameras, instant prints, and digital softcopies, OH SNAP! continues to innovate with thematic concepts like Train Booth, Hotel Booth, Elevator Booth, and many more.\n\nWe are committed to always providing the best service, cheerful atmosphere, and modern technology so that every visit to OH SNAP! leaves a sweet memory that lasts forever.',
+                    fullEn: 'OH SNAP! Photobox was born from the spirit of capturing warm, spontaneous, and unforgettable moments with your favorite people. Starting with thematic booths designed creatively, we now serve various malls across Indonesia.\n\nWith studio-grade lighting, high-resolution cameras, instant prints, and digital softcopies, OH SNAP! continues to innovate with thematic concepts like Train Booth, Hotel Booth, Elevator Booth, and many more.\n\nWe are committed to always providing the best service, cheerful atmosphere, and modern technology so that every visit to OH SNAP! leaves a sweet memory that lasts forever.',
+                    imgUrl: '' 
+                },
+                layanan: { titleId: 'Layanan <span>Kami</span>', titleEn: 'Our <span>Services</span>', subId: 'Pilih paket sesi foto terbaik.', subEn: 'Choose package.', imgUrl: '' },
+                frame: { titleId: 'Koleksi <span>Frame</span>', titleEn: 'Exclusive <span>Frame</span>', subId: 'Desain frame tematik yang selalu update setiap bulan!', subEn: 'Thematic frames.', imgUrl: '' },
+                lokasi: { titleId: 'Lokasi <span>Studio</span>', titleEn: 'Our <span>Locations</span>', subId: 'Kunjungi cabang terdekat kami di kotamu.', subEn: 'Visit branch.', imgUrl: '' }
+            },
+            titles: { 
+                titlePromoId: 'Promo <span>Spesial</span> Bulan Ini',
+                titlePromoEn: 'This Month\'s <span>Special</span> Promo',
+                subPromoId: 'Jangan lewatkan penawaran menarik di berbagai cabang OH SNAP! Photobox',
+                subPromoEn: 'Don\'t miss exciting offers at various OH SNAP! Photobox branches',
+                titleStudioId: 'Suasana <span>Studio & Booth</span>',
+                titleStudioEn: '<span>Studio & Booth</span> Vibes',
+                subStudioId: 'Intip keseruan dan estetika bilik tematik kami di berbagai kota',
+                subStudioEn: 'Take a peek at the fun and aesthetics of our thematic booths across cities',
+                titleVideoId: 'Keseruan Sobat <span>OH SNAP!</span>',
+                titleVideoEn: 'Fun Moments with <span>OH SNAP!</span>',
+                subVideoId: 'Video feed momen seru pelanggan kami di bilik photobox',
+                subVideoEn: 'Video feed of our customers\' fun moments in the photobox booth'
+            },
+            studios: [
+                { title: 'Booth Train Thematic', desc: 'Desain kabin kereta estetik', img: '' },
+                { title: 'Booth Hotel & Elevator', desc: 'Nuansa lobi hotel & lift', img: '' },
+                { title: 'Booth Claw & Pastel', desc: 'Warna cerah penuh keceriaan', img: '' },
+                { title: 'Booth Portable Series', desc: 'Gaya minimalis modern', img: '' }
+            ],
+            videos: [
+                { title: 'Video 1', url: '', thumb: '' },
+                { title: 'Video 2', url: '', thumb: '' },
+                { title: 'Video 3', url: '', thumb: '' },
+                { title: 'Video 4', url: '', thumb: '' },
+                { title: 'Video 5', url: '', thumb: '' }
+            ],
+            promos: [
+                { title: 'Promo Pelajar & Mahasiswa', badge: 'HOT PROMO', desc: 'Diskon spesial KTM aktif!', img: '' },
+                { title: 'Paket Bundling Extra Print', badge: 'BEST DEAL', desc: 'Cetak lebih banyak untuk geng.', img: '' },
+                { title: 'Weekend Flash Sale', badge: 'LIMITED', desc: 'Potongan harga khusus.', img: '' }
+            ],
+            frames: [
+                { title: 'Matcha Series Frame', category: 'Special', desc: 'Nuansa hijau matcha segar & estetik', img: '' },
+                { title: 'Retro Y2K Aesthetic', category: 'Populer', desc: 'Gaya klasik tahun 2000-an', img: '' },
+                { title: 'Minimalist Clean Strip', category: 'Classic', desc: 'Desain bersih dan elegan', img: '' },
+                { title: 'Cyberpunk Neon Vibe', category: 'Modern', desc: 'Gaya neon futuristik yang keren', img: '' },
+                { title: 'Floral Romantic Spring', category: 'Exclusive', desc: 'Sentuhan bunga musim semi', img: '' }
+            ],
+            services: [
+                { titleId: 'Photobox Basic Strip', price: 'Rp 35.000', descId: '2 Strip Cetakan Foto + File Softcopy Digital + Bebas Pilih Frame', img: '' },
+                { titleId: 'Wide Angle / Big Box', price: 'Rp 45.000', descId: 'Muat hingga 6-8 orang + Cetakan 4R + Softcopy & GIF Boomerang', img: '' },
+                { titleId: 'Thematic Booth', price: 'Rp 50.000', descId: 'Sesi foto di booth tematik ikonik + Cetakan Premium + Semua File Digital', img: '' }
+            ],
+            locations: [
+                { name: 'Kediri Mall', floor: 'Lantai 5', hours: '10.00 - 22.00', mapUrl: 'https://maps.google.com/?q=OH+SNAP+Photobox+Kediri+Mall', img: '' },
+                { name: 'Plaza Cilacap', floor: 'Lantai 3', hours: '10.00 - 22.00', mapUrl: 'https://maps.google.com/?q=OH+SNAP+Photobox+Plaza+Cilacap', img: '' },
+                { name: 'Laksana Baru', floor: 'Lantai 3', hours: '10.00 - 22.00', mapUrl: 'https://maps.google.com/?q=OH+SNAP+Photobox+Laksana+Baru+Pekalongan', img: '' },
+                { name: 'Plaza Pekalongan', floor: 'Lantai 2', hours: '10.00 - 22.00', mapUrl: 'https://maps.google.com/?q=OH+SNAP+Photobox+Plaza+Pekalongan', img: '' },
+                { name: 'Yogya Pemalang', floor: 'Lantai 3', hours: '10.00 - 22.00', mapUrl: 'https://maps.google.com/?q=OH+SNAP+Photobox+Yogya+Pemalang', img: '' }
+            ],
+            footer: { 
+                brand: 'OH SNAP! Photobox Group', 
+                branches: 'Kediri Mall Lt.5, Plaza Cilacap Lt.3, Laksana Baru Pekalongan Lt.3, Plaza Pekalongan Lt.2, Yogya Pemalang Lt.3', 
+                igName: '@ohsnap_photobox', 
+                igUrl: 'https://instagram.com/ohsnap_photobox', 
+                ttName: '@ohsnap_photobox', 
+                ttUrl: 'https://tiktok.com/@ohsnap_photobox',
+                cardTitleId: 'Find nearby OH SNAP! Studio',
+                cardTitleEn: 'Find nearby OH SNAP! Studio',
+                cardDescId: 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!',
+                cardDescEn: 'Find the nearest booth and studio in your city to capture your special moments today!',
+                copyright: '© 2026 OH SNAP! Photobox. All rights reserved.' 
+            },
+            admins: [
+                { id: 1, name: 'Super Admin', username: 'admin', pass: 'ohsnap' }
+            ],
+            resendOverrides: {}
+        };
+
+        function sanitizeVideosList(videos) {
+            if (!Array.isArray(videos)) return defaultCMS.videos;
+            return videos.map(v => {
+                let u = (v && v.url) ? String(v.url).trim() : '';
+                if (u === '#' || u === 'images/video-1.mp4') u = '';
+                return Object.assign({}, v, { url: u });
+            });
+        }
+
+        function mergeWithDefault(parsed) {
+            const merged = JSON.parse(JSON.stringify(defaultCMS));
+            if (!parsed) return merged;
+            if (parsed.colors) Object.assign(merged.colors, parsed.colors);
+            if (parsed.banners) {
+                Object.keys(parsed.banners).forEach(k => {
+                    merged.banners[k] = Object.assign({}, merged.banners[k] || {}, parsed.banners[k]);
+                    if (LEGACY_PLACEHOLDER_IMGS.includes(merged.banners[k].imgUrl)) {
+                        merged.banners[k].imgUrl = '';
+                    }
+                    if (merged.banners[k].aboutImgUrl && LEGACY_PLACEHOLDER_IMGS.includes(merged.banners[k].aboutImgUrl)) {
+                        merged.banners[k].aboutImgUrl = '';
+                    }
+                });
+            }
+            if (parsed.titles) Object.assign(merged.titles, parsed.titles);
+            
+            if (Array.isArray(parsed.studios) && parsed.studios.length > 0) merged.studios = parsed.studios;
+            if (Array.isArray(parsed.videos) && parsed.videos.length > 0) merged.videos = sanitizeVideosList(parsed.videos);
+            if (Array.isArray(parsed.promos) && parsed.promos.length > 0) merged.promos = parsed.promos;
+            if (Array.isArray(parsed.frames) && parsed.frames.length > 0) merged.frames = parsed.frames;
+            if (Array.isArray(parsed.services) && parsed.services.length > 0) merged.services = parsed.services;
+            if (Array.isArray(parsed.locations) && parsed.locations.length > 0) merged.locations = parsed.locations;
+            
+            if (parsed.footer) Object.assign(merged.footer, parsed.footer);
+            if (Array.isArray(parsed.admins) && parsed.admins.length > 0) merged.admins = parsed.admins;
+            if (parsed.resendOverrides && typeof parsed.resendOverrides === 'object') {
+                merged.resendOverrides = parsed.resendOverrides;
+            }
+            return merged;
+        }
+
+        function loadSavedCMS() {
+            try {
+                const raw = localStorage.getItem('ohsnap_cms_data');
+                if (!raw) return JSON.parse(JSON.stringify(defaultCMS));
+                return mergeWithDefault(JSON.parse(raw));
+            } catch (e) {
+                return JSON.parse(JSON.stringify(defaultCMS));
+            }
+        }
+
+        let cmsData = loadSavedCMS();
+        let activeBannerPageKey = sessionStorage.getItem('activeBannerPage') || 'home';
+        let autoCloudSyncTimer = null;
+
+        function persistData() {
+            cmsData.lastUpdated = Date.now();
+            saveCMSBackupToIDB(cmsData);
+            try {
+                localStorage.setItem('ohsnap_cms_data', JSON.stringify(cmsData));
+            } catch (e) {}
+            if (autoCloudSyncTimer) clearTimeout(autoCloudSyncTimer);
+            autoCloudSyncTimer = setTimeout(async () => {
+                try {
+                    const saved = await OhSnapCloud.save(cleanDataForCloud(cmsData));
+                    if (saved && saved.lastUpdated) cmsData.lastUpdated = saved.lastUpdated;
+                    markSynced(cmsData);
+                } catch (e) {}
+            }, 600);
+        }
+
+        function toggleMobileSidebar() { document.getElementById('sidebarEl').classList.toggle('active'); }
+
+        function clearNewAdminInputs() {
+            const n = document.getElementById('newAdminName');
+            const u = document.getElementById('newAdminUser');
+            const p = document.getElementById('newAdminPass');
+            if (n) n.value = '';
+            if (u) u.value = '';
+            if (p) p.value = '';
+        }
+
+        function switchTab(sectionId, btnEl, event) {
+            updateBannerState();
+            updateTitlesState();
+            updateFooterState();
+
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            if (btnEl) {
+                btnEl.classList.add('active');
+                document.getElementById('pageTitle').textContent = btnEl.textContent.replace(/^[^\s]+\s\d+\.\s/, '');
+            }
+            sessionStorage.setItem('activeAdminTab', sectionId);
+            document.getElementById('sidebarEl').classList.remove('active');
+            initAllRenders();
+            if (sectionId === 'sec-admins') {
+                clearNewAdminInputs();
+            }
+            if (event) event.preventDefault();
+        }
+
+        async function clearBannerImg() {
+            const page = document.getElementById('bannerPageSelect').value;
+            if (!cmsData.banners[page]) cmsData.banners[page] = {};
+            const oldUrl = cmsData.banners[page].imgUrl;
+            cmsData.banners[page].imgUrl = '';
+            if (page === 'about' && cmsData.banners.home) {
+                cmsData.banners.home.aboutImgUrl = '';
+                const quickEl = document.getElementById('aboutQuickImgUrl');
+                if (quickEl) quickEl.value = '';
+            }
+            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
+            document.getElementById('bannerImgUrl').value = '';
+            const fileEl = document.getElementById('bannerFileInput');
+            if (fileEl) fileEl.value = '';
+            renderBannerPreview();
+            await autoSyncAfterUpload('🗑️ Gambar banner dikosongkan');
+        }
+
+        async function clearAboutImg() {
+            if (!cmsData.banners.about) cmsData.banners.about = {};
+            const oldUrl = cmsData.banners.about.imgUrl;
+            cmsData.banners.about.imgUrl = '';
+            if (cmsData.banners.home) cmsData.banners.home.aboutImgUrl = '';
+            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
+            document.getElementById('aboutQuickImgUrl').value = '';
+            const fileEl = document.getElementById('aboutQuickFileInput');
+            if (fileEl) fileEl.value = '';
+            if (document.getElementById('bannerPageSelect').value === 'about') {
+                document.getElementById('bannerImgUrl').value = '';
+            }
+            renderBannerPreview();
+            await autoSyncAfterUpload('🗑️ Foto About Story dikosongkan');
+        }
+
+        function updateBannerImgManual(val) {
+            const clean = val.trim();
+            if (clean.startsWith('[')) return;
+            const page = document.getElementById('bannerPageSelect').value;
+            if (!cmsData.banners[page]) cmsData.banners[page] = {};
+            cmsData.banners[page].imgUrl = clean;
+            if (page === 'about' && cmsData.banners.home) {
+                cmsData.banners.home.aboutImgUrl = clean;
+            }
+            renderBannerPreview();
+            persistData();
+        }
+
+        function updateAboutImgManual(val) {
+            const clean = val.trim();
+            if (clean.startsWith('[')) return;
+            if (!cmsData.banners.about) cmsData.banners.about = {};
+            cmsData.banners.about.imgUrl = clean;
+            if (cmsData.banners.home) cmsData.banners.home.aboutImgUrl = clean;
+            renderBannerPreview();
+            persistData();
+        }
+
+        function renderBannerPreview() {
+            const page = document.getElementById('bannerPageSelect').value;
+            const wrap = document.getElementById('bannerPreviewWrap');
+            if (wrap) {
+                const url = (cmsData.banners[page] && cmsData.banners[page].imgUrl) ? cmsData.banners[page].imgUrl : '';
+                if (url && url.trim() !== '' && !LEGACY_PLACEHOLDER_IMGS.includes(url)) {
+                    wrap.innerHTML = `<div class="media-preview-box"><img src="${escAttr(url)}" onerror="this.style.display='none'"><span>✅ Gambar Banner Aktif</span></div>`;
+                } else {
+                    wrap.innerHTML = '';
+                }
+            }
+
+            const aboutWrap = document.getElementById('aboutPreviewWrap');
+            if (aboutWrap) {
+                const aboutUrl = (cmsData.banners.about && cmsData.banners.about.imgUrl) ? cmsData.banners.about.imgUrl : '';
+                if (aboutUrl && aboutUrl.trim() !== '' && !LEGACY_PLACEHOLDER_IMGS.includes(aboutUrl)) {
+                    aboutWrap.innerHTML = `<div class="media-preview-box"><img src="${escAttr(aboutUrl)}" onerror="this.style.display='none'"><span>✅ Foto About Story Aktif</span></div>`;
+                } else {
+                    aboutWrap.innerHTML = '';
+                }
+            }
+        }
+
+        async function clearArrayImg(arr, idx, prop) {
+            const oldUrl = cmsData[arr][idx][prop];
+            cmsData[arr][idx][prop] = '';
+            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
+            initAllRenders();
+            await autoSyncAfterUpload('🗑️ Media dikosongkan');
+        }
+
+        function togglePasswordVisibility(inputId, btnEl) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                btnEl.textContent = '👁️‍🗨️';
+            } else {
+                input.type = 'password';
+                btnEl.textContent = '👁️';
+            }
+        }
+
+        function cleanDataForCloud(obj) {
+            return JSON.parse(JSON.stringify(obj));
+        }
+
+        async function autoSyncAfterUpload(successMsg) {
+            updateBannerState();
+            updateTitlesState();
+            updateFooterState();
+            cmsData.lastUpdated = Date.now();
+            persistData();
+            try {
+                const saved = await OhSnapCloud.save(cleanDataForCloud(cmsData));
+                if (saved && saved.lastUpdated) cmsData.lastUpdated = saved.lastUpdated;
+                markSynced(cmsData);
+                showToast(successMsg + ' & tersinkron ke Cloud!');
+            } catch (e) {
+                console.error('Auto-sync gagal:', e);
+                showToast(successMsg + ' (klik Simpan Semua Perubahan untuk sinkron ulang)');
+            }
+        }
+
+        async function handleFileUpload(inputEl) {
+            const file = inputEl.files[0];
+            if (!file) return;
+            showToast('⏳ Mengunggah gambar banner ke Cloud Storage...');
+            try {
+                const page = document.getElementById('bannerPageSelect').value;
+                if (!cmsData.banners[page]) cmsData.banners[page] = {};
+                const oldUrl = cmsData.banners[page].imgUrl;
+                const publicUrl = await uploadImageToCloud(file);
+                cmsData.banners[page].imgUrl = publicUrl;
+                if (page === 'about' && cmsData.banners.home) {
+                    cmsData.banners.home.aboutImgUrl = publicUrl;
+                }
+                if (oldUrl && oldUrl !== publicUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
+                document.getElementById('bannerImgUrl').value = publicUrl.startsWith('data:') ? '' : publicUrl;
+                inputEl.value = '';
+                renderBannerPreview();
+                await autoSyncAfterUpload('✅ Gambar Banner berhasil diupload');
+            } catch (err) {
+                showToast('❌ Gagal memuat file gambar');
+            }
+        }
+
+        async function handleAboutPhotoUpload(inputEl) {
+            const file = inputEl.files[0];
+            if (!file) return;
+            showToast('⏳ Mengunggah Foto About Story ke Cloud Storage...');
+            try {
+                if (!cmsData.banners.about) cmsData.banners.about = {};
+                if (!cmsData.banners.home) cmsData.banners.home = {};
+                const oldUrl = cmsData.banners.about.imgUrl;
+                const publicUrl = await uploadImageToCloud(file);
+                cmsData.banners.about.imgUrl = publicUrl;
+                cmsData.banners.home.aboutImgUrl = publicUrl;
+                if (oldUrl && oldUrl !== publicUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
+                document.getElementById('aboutQuickImgUrl').value = publicUrl.startsWith('data:') ? '' : publicUrl;
+                if (document.getElementById('bannerPageSelect').value === 'about') {
+                    document.getElementById('bannerImgUrl').value = publicUrl.startsWith('data:') ? '' : publicUrl;
+                }
+                inputEl.value = '';
+                renderBannerPreview();
+                await autoSyncAfterUpload('✅ Foto About Story berhasil diupload');
+            } catch (err) {
+                showToast('❌ Gagal memuat Foto About Story');
+            }
+        }
+
+        async function uploadArrayImg(inputEl, arrName, index, propName) {
+            const file = inputEl.files[0];
+            if (!file) return;
+            showToast('⏳ Mengunggah foto ke Cloud Storage...');
+            try {
+                const oldUrl = cmsData[arrName][index][propName];
+                const publicUrl = await uploadImageToCloud(file);
+                cmsData[arrName][index][propName] = publicUrl;
+                if (oldUrl && oldUrl !== publicUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
+                inputEl.value = '';
+                initAllRenders();
+                await autoSyncAfterUpload('✅ Foto berhasil diupload');
+            } catch (err) {
+                showToast('❌ Gagal memuat file foto');
+            }
+        }
+
+        async function uploadVideoFile(inputEl, arrName, index, propName) {
+            const file = inputEl.files[0];
+            if (!file) return;
+            if (file.size > 50 * 1024 * 1024) {
+                alert('Ukuran 1 file video maksimal 50 MB (batas per-file Supabase Free Tier). Silakan kompres videonya terlebih dahulu.');
+                inputEl.value = '';
+                return;
+            }
+            showToast('⏳ Mengunggah video ke Cloud Storage (mohon tunggu)...');
+            try {
+                const oldUrl = cmsData[arrName][index][propName];
+                const ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
+                const publicUrl = await OhSnapCloud.upload(file, 'video', ext);
+                cmsData[arrName][index][propName] = publicUrl;
+                cmsData[arrName][index].fileName = file.name;
+                if (oldUrl && oldUrl !== publicUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
+                inputEl.value = '';
+                initAllRenders();
+                await autoSyncAfterUpload('✅ Video berhasil diupload');
+            } catch (cloudErr) {
+                console.warn('Upload video ke cloud gagal:', cloudErr);
+                try {
+                    const idbKey = `video_slot_${index}_${Date.now()}`;
+                    await saveVideoBufferToIDB(idbKey, file);
+                    cmsData[arrName][index][propName] = `idb://${idbKey}`;
+                    cmsData[arrName][index].fileName = file.name;
+                    inputEl.value = '';
+                    persistData();
+                    initAllRenders();
+                    showToast('⚠️ Video disimpan lokal (pastikan SQL Bucket ohsnap-media sudah dijalankan)');
+                } catch (err) {
+                    showToast('❌ Gagal menyimpan video MP4');
+                }
+            }
+        }
+
+        function onBannerPageChange() {
+            const prevPage = activeBannerPageKey;
+            if (prevPage && cmsData.banners[prevPage]) {
+                cmsData.banners[prevPage].titleId = document.getElementById('bannerTitleId').value;
+                cmsData.banners[prevPage].titleEn = document.getElementById('bannerTitleEn').value;
+                cmsData.banners[prevPage].subId = document.getElementById('bannerSubId').value;
+                cmsData.banners[prevPage].subEn = document.getElementById('bannerSubEn').value;
+                if (prevPage === 'about') {
+                    cmsData.banners[prevPage].btnId = document.getElementById('bannerBtnId').value;
+                    cmsData.banners[prevPage].btnEn = document.getElementById('bannerBtnEn').value;
+                    cmsData.banners[prevPage].fullId = document.getElementById('bannerFullId').value;
+                    cmsData.banners[prevPage].fullEn = document.getElementById('bannerFullEn').value;
+                }
+            }
+            activeBannerPageKey = document.getElementById('bannerPageSelect').value;
+            sessionStorage.setItem('activeBannerPage', activeBannerPageKey);
+            persistData();
+            loadBannerByPage();
+        }
+
+        function loadBannerByPage() {
+            const selectEl = document.getElementById('bannerPageSelect');
+            if (selectEl.value !== activeBannerPageKey) {
+                selectEl.value = activeBannerPageKey;
+            }
+            const page = selectEl.value;
+            const aboutFields = document.getElementById('aboutSpecificFields');
+            aboutFields.style.display = (page === 'about') ? 'block' : 'none';
+
+            const labelMap = {
+                home: '🖼️ Upload Gambar Hero Banner Beranda (Atau Isi URL):',
+                about: '📸 Upload Foto About Our Story (Atau Isi URL):',
+                layanan: '🖼️ Upload Gambar Banner Halaman Layanan:',
+                frame: '🖼️ Upload Gambar Banner Halaman Frame:',
+                lokasi: '🖼️ Upload Gambar Banner Halaman Lokasi:'
+            };
+            const lblEl = document.getElementById('bannerUploadLabel');
+            if (lblEl) lblEl.textContent = labelMap[page] || '🖼️ Upload Gambar Banner:';
+
+            const quickAboutBox = document.getElementById('quickAboutPhotoBox');
+            if (quickAboutBox) {
+                quickAboutBox.style.display = (page === 'home') ? 'block' : 'none';
+            }
+
+            const b = cmsData.banners[page] || { titleId: '', titleEn: '', subId: '', subEn: '', btnId: '', btnEn: '', fullId: '', fullEn: '', imgUrl: '' };
+            document.getElementById('bannerTitleId').value = b.titleId !== undefined ? b.titleId : '';
+            document.getElementById('bannerTitleEn').value = b.titleEn !== undefined ? b.titleEn : '';
+            document.getElementById('bannerSubId').value = b.subId !== undefined ? b.subId : '';
+            document.getElementById('bannerSubEn').value = b.subEn !== undefined ? b.subEn : '';
+            
+            const btnIdEl = document.getElementById('bannerBtnId');
+            const btnEnEl = document.getElementById('bannerBtnEn');
+            if (btnIdEl) btnIdEl.value = b.btnId !== undefined ? b.btnId : '';
+            if (btnEnEl) btnEnEl.value = b.btnEn !== undefined ? b.btnEn : '';
+
+            const fullIdEl = document.getElementById('bannerFullId');
+            const fullEnEl = document.getElementById('bannerFullEn');
+            if (fullIdEl) fullIdEl.value = b.fullId !== undefined ? b.fullId : '';
+            if (fullEnEl) fullEnEl.value = b.fullEn !== undefined ? b.fullEn : '';
+
+            const imgInput = document.getElementById('bannerImgUrl');
+            if (b.imgUrl && b.imgUrl.startsWith('data:image')) {
+                imgInput.value = '';
+                imgInput.placeholder = '✅ Foto dari komputer sudah tersimpan (lihat preview di bawah)';
+            } else {
+                imgInput.value = (b.imgUrl && !LEGACY_PLACEHOLDER_IMGS.includes(b.imgUrl)) ? b.imgUrl : '';
+                imgInput.placeholder = 'Klik Choose File di bawah atau tempel link URL...';
+            }
+
+            const aboutQuickInput = document.getElementById('aboutQuickImgUrl');
+            const aboutUrl = (cmsData.banners.about && cmsData.banners.about.imgUrl) ? cmsData.banners.about.imgUrl : '';
+            if (aboutQuickInput) {
+                if (aboutUrl && aboutUrl.startsWith('data:image')) {
+                    aboutQuickInput.value = '';
+                    aboutQuickInput.placeholder = '✅ Foto About Story sudah tersimpan (lihat preview di bawah)';
+                } else {
+                    aboutQuickInput.value = (aboutUrl && !LEGACY_PLACEHOLDER_IMGS.includes(aboutUrl)) ? aboutUrl : '';
+                    aboutQuickInput.placeholder = 'Klik Choose File di bawah atau tempel link URL...';
+                }
+            }
+
+            renderBannerPreview();
+        }
+
+        function updateBannerState() {
+            const page = document.getElementById('bannerPageSelect').value;
+            activeBannerPageKey = page;
+            sessionStorage.setItem('activeBannerPage', page);
+            if (!cmsData.banners[page]) cmsData.banners[page] = {};
+            cmsData.banners[page].titleId = document.getElementById('bannerTitleId').value;
+            cmsData.banners[page].titleEn = document.getElementById('bannerTitleEn').value;
+            cmsData.banners[page].subId = document.getElementById('bannerSubId').value;
+            cmsData.banners[page].subEn = document.getElementById('bannerSubEn').value;
+            
+            const btnIdEl = document.getElementById('bannerBtnId');
+            const btnEnEl = document.getElementById('bannerBtnEn');
+            if (btnIdEl && page === 'about') cmsData.banners[page].btnId = btnIdEl.value;
+            if (btnEnEl && page === 'about') cmsData.banners[page].btnEn = btnEnEl.value;
+
+            const fullIdEl = document.getElementById('bannerFullId');
+            const fullEnEl = document.getElementById('bannerFullEn');
+            if (fullIdEl && page === 'about') cmsData.banners[page].fullId = fullIdEl.value;
+            if (fullEnEl && page === 'about') cmsData.banners[page].fullEn = fullEnEl.value;
+
+            persistData();
+        }
+
+        function updateTitlesState() {
+            if (!cmsData.titles) cmsData.titles = {};
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                return el ? el.value : '';
+            };
+            cmsData.titles.titleVideoId = getVal('titleVideoId');
+            cmsData.titles.titleVideoEn = getVal('titleVideoEn');
+            cmsData.titles.subVideoId = getVal('subVideoId');
+            cmsData.titles.subVideoEn = getVal('subVideoEn');
+
+            cmsData.titles.titleStudioId = getVal('titleStudioId');
+            cmsData.titles.titleStudioEn = getVal('titleStudioEn');
+            cmsData.titles.subStudioId = getVal('subStudioId');
+            cmsData.titles.subStudioEn = getVal('subStudioEn');
+
+            cmsData.titles.titlePromoId = getVal('titlePromoId');
+            cmsData.titles.titlePromoEn = getVal('titlePromoEn');
+            cmsData.titles.subPromoId = getVal('subPromoId');
+            cmsData.titles.subPromoEn = getVal('subPromoEn');
+            persistData();
+        }
+
+        function loadTitlesState() {
+            if (!cmsData.titles) cmsData.titles = JSON.parse(JSON.stringify(defaultCMS.titles));
+            const t = cmsData.titles;
+            const d = defaultCMS.titles;
+            const setVal = (id, val, fallback) => {
+                const el = document.getElementById(id);
+                if (el) el.value = (val !== undefined && val !== null) ? val : (fallback || '');
+            };
+            setVal('titleVideoId', t.titleVideoId, d.titleVideoId);
+            setVal('titleVideoEn', t.titleVideoEn, d.titleVideoEn);
+            setVal('subVideoId', t.subVideoId, d.subVideoId);
+            setVal('subVideoEn', t.subVideoEn, d.subVideoEn);
+
+            setVal('titleStudioId', t.titleStudioId, d.titleStudioId);
+            setVal('titleStudioEn', t.titleStudioEn, d.titleStudioEn);
+            setVal('subStudioId', t.subStudioId, d.subStudioId);
+            setVal('subStudioEn', t.subStudioEn, d.subStudioEn);
+
+            setVal('titlePromoId', t.titlePromoId, d.titlePromoId);
+            setVal('titlePromoEn', t.titlePromoEn, d.titlePromoEn);
+            setVal('subPromoId', t.subPromoId, d.subPromoId);
+            setVal('subPromoEn', t.subPromoEn, d.subPromoEn);
+        }
+
+        function renderVideos() {
+            const c = document.getElementById('videoListContainer'); if (!c) return; c.innerHTML = '';
+            const total = cmsData.videos.length;
+            cmsData.videos.forEach((v, i) => {
+                let navHtml = total > 5 ? `<div>${i > 0 ? `<button type="button" class="order-nav-btn" onclick="moveVideo(${i}, -1)">&lt;</button>` : ''}${i < total - 1 ? `<button type="button" class="order-nav-btn" onclick="moveVideo(${i}, 1)">&gt;</button>` : ''}</div>` : '';
+                const isIdb = v.url && v.url.startsWith('idb://');
+                const idbKey = isIdb ? v.url.replace('idb://', '') : '';
+                const inputVal = isIdb ? '' : (v.url || '');
+                const inputPlaceholder = isIdb ? `✅ File MP4 Terupload: ${v.fileName || 'Video.mp4'}` : 'https://www.instagram.com/... atau Upload MP4 di bawah';
+                
+                let previewBadge = '';
+                if (isIdb) {
+                    previewBadge = `<div class="media-preview-box"><video data-admin-idb="${escAttr(idbKey)}" muted playsinline loop controls></video><span>🎬 Video MP4 Siap Diputar (${escAttr(v.fileName || 'MP4')})</span></div>`;
+                } else if (v.url && v.url !== '#' && v.url.trim() !== '') {
+                    previewBadge = `<div class="media-preview-box"><span>🔗 Link Video Aktif: ${escAttr(v.url.slice(0, 35))}...</span></div>`;
+                }
+
+                c.innerHTML += `<div class="item-card"><h4><span>Video #${i+1}</span><div style="display:flex;gap:6px;align-items:center;">${navHtml}<button class="btn-remove" onclick="removeVideo(${i})">Hapus</button></div></h4>
+                    <div class="form-group"><label>Judul Video</label><input type="text" value="${escAttr(v.title || '')}" oninput="cmsData.videos[${i}].title=this.value; persistData();"></div>
+                    <div class="form-group"><label>Link URL (IG/TikTok/MP4) atau Upload File MP4</label><div class="input-with-clear"><input type="text" value="${escAttr(inputVal)}" placeholder="${escAttr(inputPlaceholder)}" oninput="cmsData.videos[${i}].url=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" onclick="clearArrayImg('videos',${i},'url')">❌ X</button></div><input type="file" accept="video/mp4,video/*" style="margin-top:6px;" onchange="uploadVideoFile(this,'videos',${i},'url')">${previewBadge}</div></div>`;
+            });
+
+            setTimeout(async () => {
+                const adminVids = document.querySelectorAll('video[data-admin-idb]');
+                for (const vidEl of adminVids) {
+                    const key = vidEl.getAttribute('data-admin-idb');
+                    const record = await getMediaFromIDB(key);
+                    if (record) {
+                        const blob = (record instanceof Blob) ? record : new Blob([record.buffer], { type: record.type || 'video/mp4' });
+                        vidEl.src = URL.createObjectURL(blob);
+                    }
+                }
+            }, 100);
+        }
+        function addVideoItem() { cmsData.videos.push({title:'Baru', url:''}); persistData(); renderVideos(); }
+        async function removeVideo(i) {
+            if (cmsData.videos.length <= 5) return alert('Batas minimal Video Feed adalah 5!');
+            const oldUrl = cmsData.videos[i] && cmsData.videos[i].url;
+            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
+            cmsData.videos.splice(i, 1);
+            renderVideos();
+            await autoSyncAfterUpload('🗑️ Video dihapus');
+        }
+        function moveVideo(index, dir) { const t = index + dir; if(t<0||t>=cmsData.videos.length)return; const tmp=cmsData.videos[index]; cmsData.videos[index]=cmsData.videos[t]; cmsData.videos[t]=tmp; persistData(); renderVideos(); }
+
+        function renderStudios() {
+            const c = document.getElementById('studioListContainer'); if (!c) return; c.innerHTML = '';
+            const total = cmsData.studios.length;
+            cmsData.studios.forEach((s, i) => {
+                let navHtml = total > 4 ? `<div>${i > 0 ? `<button type="button" class="order-nav-btn" onclick="moveStudio(${i}, -1)">&lt;</button>` : ''}${i < total - 1 ? `<button type="button" class="order-nav-btn" onclick="moveStudio(${i}, 1)">&gt;</button>` : ''}</div>` : '';
+                const isBase64 = s.img && s.img.startsWith('data:image');
+                const displayVal = isBase64 ? '' : (s.img || '');
+                const placeholderVal = isBase64 ? '✅ Foto dari komputer sudah tersimpan' : 'Upload foto di bawah atau isi URL';
+                const previewHtml = (s.img && s.img.trim() !== '') ? `<div class="media-preview-box"><img src="${escAttr(s.img)}" onerror="this.style.display='none'"><span>✅ Foto Studio Aktif</span></div>` : '';
+
+                c.innerHTML += `<div class="item-card"><h4><span>Studio #${i+1}</span><div style="display:flex;gap:6px;align-items:center;">${navHtml}<button class="btn-remove" onclick="removeStudio(${i})">Hapus</button></div></h4>
+                    <div class="form-group"><label>Nama</label><input type="text" value="${escAttr(s.title || '')}" oninput="cmsData.studios[${i}].title=this.value; persistData();"></div>
+                    <div class="form-group"><label>Desc</label><input type="text" value="${escAttr(s.desc || '')}" oninput="cmsData.studios[${i}].desc=this.value; persistData();"></div>
+                    <div class="form-group"><label>Foto</label><div class="input-with-clear"><input type="text" value="${escAttr(displayVal)}" placeholder="${escAttr(placeholderVal)}" oninput="cmsData.studios[${i}].img=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" onclick="clearArrayImg('studios',${i},'img')">❌ X</button></div><input type="file" accept="image/*" style="margin-top:6px;" onchange="uploadArrayImg(this,'studios',${i},'img')">${previewHtml}</div></div>`;
+            });
+        }
+        function addStudioItem() { cmsData.studios.push({title:'Studio Baru', desc:'', img:''}); persistData(); renderStudios(); }
+        async function removeStudio(i) {
+            if (cmsData.studios.length <= 4) return alert('Batas minimal Suasana Studio adalah 4!');
+            const oldUrl = cmsData.studios[i] && cmsData.studios[i].img;
+            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
+            cmsData.studios.splice(i, 1);
+            renderStudios();
+            await autoSyncAfterUpload('🗑️ Studio dihapus');
+        }
+        function moveStudio(index, dir) { const t = index + dir; if(t<0||t>=cmsData.studios.length)return; const tmp=cmsData.studios[index]; cmsData.studios[index]=cmsData.studios[t]; cmsData.studios[t]=tmp; persistData(); renderStudios(); }
+
+        function renderPromos() {
+            const c = document.getElementById('promoListContainer'); if (!c) return; c.innerHTML = '';
+            const total = cmsData.promos.length;
+            cmsData.promos.forEach((p, i) => {
+                let navHtml = total > 3 ? `<div>${i > 0 ? `<button type="button" class="order-nav-btn" onclick="movePromo(${i}, -1)">&lt;</button>` : ''}${i < total - 1 ? `<button type="button" class="order-nav-btn" onclick="movePromo(${i}, 1)">&gt;</button>` : ''}</div>` : '';
+                const isBase64 = p.img && p.img.startsWith('data:image');
+                const displayVal = isBase64 ? '' : (p.img || '');
+                const placeholderVal = isBase64 ? '✅ Poster dari komputer sudah tersimpan' : 'Upload poster di bawah atau isi URL';
+                const previewHtml = (p.img && p.img.trim() !== '') ? `<div class="media-preview-box"><img src="${escAttr(p.img)}" onerror="this.style.display='none'"><span>✅ Poster Promo Aktif</span></div>` : '';
+
+                c.innerHTML += `<div class="item-card"><h4><span>Promo #${i+1}</span><div style="display:flex;gap:6px;align-items:center;">${navHtml}<button class="btn-remove" onclick="removePromo(${i})">Hapus</button></div></h4>
+                    <div class="form-group"><label>Judul</label><input type="text" value="${escAttr(p.title || '')}" oninput="cmsData.promos[${i}].title=this.value; persistData();"></div>
+                    <div class="form-group"><label>Badge</label><input type="text" value="${escAttr(p.badge || '')}" oninput="cmsData.promos[${i}].badge=this.value; persistData();"></div>
+                    <div class="form-group"><label>Desc</label><textarea oninput="cmsData.promos[${i}].desc=this.value; persistData();">${escAttr(p.desc || '')}</textarea></div>
+                    <div class="form-group"><label>Poster</label><div class="input-with-clear"><input type="text" value="${escAttr(displayVal)}" placeholder="${escAttr(placeholderVal)}" oninput="cmsData.promos[${i}].img=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" onclick="clearArrayImg('promos',${i},'img')">❌ X</button></div><input type="file" accept="image/*" style="margin-top:6px;" onchange="uploadArrayImg(this,'promos',${i},'img')">${previewHtml}</div></div>`;
+            });
+        }
+        function addPromoItem() { cmsData.promos.push({title:'Promo Baru', badge:'PROMO', desc:'', img:''}); persistData(); renderPromos(); }
+        async function removePromo(i) {
+            if (cmsData.promos.length <= 3) return alert('Batas minimal Kelola Promo adalah 3!');
+            const oldUrl = cmsData.promos[i] && cmsData.promos[i].img;
+            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
+            cmsData.promos.splice(i, 1);
+            renderPromos();
+            await autoSyncAfterUpload('🗑️ Promo dihapus');
+        }
+        function movePromo(index, dir) { const t = index + dir; if(t<0||t>=cmsData.promos.length)return; const tmp=cmsData.promos[index]; cmsData.promos[index]=cmsData.promos[t]; cmsData.promos[t]=tmp; persistData(); renderPromos(); }
+
+        function renderFrames() {
+            const c = document.getElementById('frameListContainer'); 
+            if (!c) return;
+            c.innerHTML = '';
+            if (!cmsData.frames) cmsData.frames = [];
+            const total = cmsData.frames.length;
+            
+            cmsData.frames.forEach((f, i) => {
+                let navHtml = total > 5 ? `<div>${i > 0 ? `<button type="button" class="order-nav-btn" onclick="moveFrame(${i}, -1)">&lt;</button>` : ''}${i < total - 1 ? `<button type="button" class="order-nav-btn" onclick="moveFrame(${i}, 1)">&gt;</button>` : ''}</div>` : '';
+                const isBase64 = f.img && f.img.startsWith('data:image');
+                const displayVal = isBase64 ? '' : (f.img || '');
+                const placeholderVal = isBase64 ? '✅ Gambar Frame sudah tersimpan' : 'Upload frame di bawah atau isi URL';
+                const previewHtml = (f.img && f.img.trim() !== '') ? `<div class="media-preview-box"><img src="${escAttr(f.img)}" onerror="this.style.display='none'"><span>✅ Frame Aktif</span></div>` : '';
+                
+                c.innerHTML += `<div class="item-card">
+                    <h4>
+                        <span>Frame #${i+1}</span>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            ${navHtml}
+                            <button class="btn-remove" onclick="removeFrame(${i})">Hapus</button>
+                        </div>
+                    </h4>
+                    <div class="form-group"><label>Nama Frame</label><input type="text" value="${escAttr(f.title || '')}" oninput="cmsData.frames[${i}].title=this.value; persistData();"></div>
+                    <div class="form-group"><label>Kategori</label><input type="text" value="${escAttr(f.category || '')}" oninput="cmsData.frames[${i}].category=this.value; persistData();"></div>
+                    <div class="form-group"><label>Deskripsi Frame</label><textarea oninput="cmsData.frames[${i}].desc=this.value; persistData();">${escAttr(f.desc || '')}</textarea></div>
+                    <div class="form-group"><label>Gambar Frame</label><div class="input-with-clear"><input type="text" value="${escAttr(displayVal)}" placeholder="${escAttr(placeholderVal)}" oninput="cmsData.frames[${i}].img=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" onclick="clearArrayImg('frames',${i},'img')">❌ X</button></div><input type="file" accept="image/*" style="margin-top:6px;" onchange="uploadArrayImg(this,'frames',${i},'img')">${previewHtml}</div>
+                </div>`;
+            });
+        }
+        function addFrameItem() { if(!cmsData.frames) cmsData.frames=[]; cmsData.frames.push({title:'Frame Baru', category:'New', desc:'', img:''}); persistData(); renderFrames(); }
+        async function removeFrame(i) {
+            if (cmsData.frames.length <= 5) return alert('Batas minimal Frame Layout adalah 5!');
+            const oldUrl = cmsData.frames[i] && cmsData.frames[i].img;
+            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
+            cmsData.frames.splice(i, 1);
+            renderFrames();
+            await autoSyncAfterUpload('🗑️ Frame dihapus');
+        }
+        function moveFrame(index, dir) { const t = index + dir; if(t<0||t>=cmsData.frames.length)return; const tmp=cmsData.frames[index]; cmsData.frames[index]=cmsData.frames[t]; cmsData.frames[t]=tmp; persistData(); renderFrames(); }
+
+        function renderServices() {
+            const c = document.getElementById('serviceListContainer'); 
+            if (!c) return;
+            c.innerHTML = '';
+            if (!cmsData.services) cmsData.services = [];
+            const total = cmsData.services.length;
+            
+            cmsData.services.forEach((s, i) => {
+                let navHtml = total > 3 ? `<div>${i > 0 ? `<button type="button" class="order-nav-btn" onclick="moveService(${i}, -1)">&lt;</button>` : ''}${i < total - 1 ? `<button type="button" class="order-nav-btn" onclick="moveService(${i}, 1)">&gt;</button>` : ''}</div>` : '';
+                const isBase64 = s.img && s.img.startsWith('data:image');
+                const displayVal = isBase64 ? '' : (s.img || '');
+                const placeholderVal = isBase64 ? '✅ Foto Layanan sudah tersimpan' : 'Upload foto di bawah atau isi URL';
+                const previewHtml = (s.img && s.img.trim() !== '') ? `<div class="media-preview-box"><img src="${escAttr(s.img)}" onerror="this.style.display='none'"><span>✅ Foto Layanan Aktif</span></div>` : '';
+                
+                c.innerHTML += `<div class="item-card">
+                    <h4>
+                        <span>Layanan #${i+1}</span>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            ${navHtml}
+                            <button class="btn-remove" onclick="removeSrv(${i})">Hapus</button>
+                        </div>
+                    </h4>
+                    <div class="form-group"><label>Judul Layanan (Title)</label><input type="text" value="${escAttr(s.titleId || s.title || '')}" oninput="cmsData.services[${i}].titleId=this.value; persistData();"></div>
+                    <div class="form-group"><label>Harga (Contoh: Rp 35.000)</label><input type="text" value="${escAttr(s.price || '')}" oninput="cmsData.services[${i}].price=this.value; persistData();"></div>
+                    <div class="form-group"><label>Deskripsi Layanan (Desc)</label><textarea oninput="cmsData.services[${i}].descId=this.value; persistData();">${escAttr(s.descId || s.desc || '')}</textarea></div>
+                    <div class="form-group"><label>Foto Layanan (Format Portrait)</label><div class="input-with-clear"><input type="text" value="${escAttr(displayVal)}" placeholder="${escAttr(placeholderVal)}" oninput="cmsData.services[${i}].img=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" onclick="clearArrayImg('services',${i},'img')">❌ X</button></div><input type="file" accept="image/*" style="margin-top:6px;" onchange="uploadArrayImg(this,'services',${i},'img')">${previewHtml}</div>
+                </div>`;
+            });
+        }
+        function addServiceItem() { if(!cmsData.services) cmsData.services=[]; cmsData.services.push({titleId:'Layanan Baru', price:'Rp 0', descId:'', img:''}); persistData(); renderServices(); }
+        async function removeSrv(i) {
+            if (cmsData.services.length <= 3) return alert('Batas minimal Layanan adalah 3!');
+            const oldUrl = cmsData.services[i] && cmsData.services[i].img;
+            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
+            cmsData.services.splice(i, 1);
+            renderServices();
+            await autoSyncAfterUpload('🗑️ Layanan dihapus');
+        }
+        function moveService(index, dir) { const t = index + dir; if(t<0||t>=cmsData.services.length)return; const tmp=cmsData.services[index]; cmsData.services[index]=cmsData.services[t]; cmsData.services[t]=tmp; persistData(); renderServices(); }
+
+        function renderLocations() {
+            const c = document.getElementById('locationListContainer'); if (!c) return; c.innerHTML = '';
+            const total = cmsData.locations.length;
+            cmsData.locations.forEach((l, i) => {
+                let navHtml = total > 5 ? `<div>${i > 0 ? `<button type="button" class="order-nav-btn" onclick="moveLocation(${i}, -1)">&lt;</button>` : ''}${i < total - 1 ? `<button type="button" class="order-nav-btn" onclick="moveLocation(${i}, 1)">&gt;</button>` : ''}</div>` : '';
+                const isBase64 = l.img && l.img.startsWith('data:image');
+                const displayVal = isBase64 ? '' : (l.img || '');
+                const placeholderVal = isBase64 ? '✅ Foto Cabang sudah tersimpan' : 'Upload foto di bawah atau isi URL';
+                const previewHtml = (l.img && l.img.trim() !== '') ? `<div class="media-preview-box"><img src="${escAttr(l.img)}" onerror="this.style.display='none'"><span>✅ Foto Cabang Aktif</span></div>` : '';
+
+                c.innerHTML += `<div class="item-card"><h4><span>Lokasi #${i+1}</span><div style="display:flex;gap:6px;align-items:center;">${navHtml}<button class="btn-remove" onclick="removeLoc(${i})">Hapus</button></div></h4>
+                    <div class="form-group"><label>Nama Cabang</label><input type="text" value="${escAttr(l.name || '')}" oninput="cmsData.locations[${i}].name=this.value; persistData();"></div>
+                    <div class="form-group"><label>Lantai</label><input type="text" value="${escAttr(l.floor || '')}" oninput="cmsData.locations[${i}].floor=this.value; persistData();"></div>
+                    <div class="form-group"><label>Jam Buka</label><input type="text" value="${escAttr(l.hours || '')}" oninput="cmsData.locations[${i}].hours=this.value; persistData();"></div>
+                    <div class="form-group"><label>Maps URL</label><input type="text" value="${escAttr(l.mapUrl || '')}" oninput="cmsData.locations[${i}].mapUrl=this.value; persistData();"></div>
+                    <div class="form-group"><label>Foto Cabang (Format 1:1)</label><div class="input-with-clear"><input type="text" value="${escAttr(displayVal)}" placeholder="${escAttr(placeholderVal)}" oninput="cmsData.locations[${i}].img=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" onclick="clearArrayImg('locations',${i},'img')">❌ X</button></div><input type="file" accept="image/*" style="margin-top:6px;" onchange="uploadArrayImg(this,'locations',${i},'img')">${previewHtml}</div></div>`;
+            });
+        }
+        function addLocationItem() { cmsData.locations.push({name:'Cabang Baru', floor:'Lt.1', hours:'10.00 - 22.00', mapUrl:'', img:''}); persistData(); renderLocations(); }
+        async function removeLoc(i) {
+            if (cmsData.locations.length <= 5) return alert('Batas minimal Lokasi Cabang adalah 5!');
+            const oldUrl = cmsData.locations[i] && cmsData.locations[i].img;
+            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
+            cmsData.locations.splice(i, 1);
+            renderLocations();
+            await autoSyncAfterUpload('🗑️ Lokasi cabang dihapus');
+        }
+        function moveLocation(index, dir) { const t = index + dir; if(t<0||t>=cmsData.locations.length)return; const tmp=cmsData.locations[index]; cmsData.locations[index]=cmsData.locations[t]; cmsData.locations[t]=tmp; persistData(); renderLocations(); }
+
+        function loadFooterState() {
+            const f = cmsData.footer || defaultCMS.footer;
+            document.getElementById('footerBrand').value = f.brand !== undefined ? f.brand : '';
+            document.getElementById('footerBranches').value = f.branches !== undefined ? f.branches : '';
+            document.getElementById('footerIgName').value = f.igName !== undefined ? f.igName : '';
+            document.getElementById('footerIgUrl').value = f.igUrl !== undefined ? f.igUrl : '';
+            document.getElementById('footerTtName').value = f.ttName !== undefined ? f.ttName : '';
+            document.getElementById('footerTtUrl').value = f.ttUrl !== undefined ? f.ttUrl : '';
+            document.getElementById('footerCardTitleId').value = f.cardTitleId !== undefined ? f.cardTitleId : 'Find nearby OH SNAP! Studio';
+            document.getElementById('footerCardTitleEn').value = f.cardTitleEn !== undefined ? f.cardTitleEn : 'Find nearby OH SNAP! Studio';
+            document.getElementById('footerCardDescId').value = f.cardDescId !== undefined ? f.cardDescId : 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!';
+            document.getElementById('footerCardDescEn').value = f.cardDescEn !== undefined ? f.cardDescEn : 'Find the nearest booth and studio in your city to capture your special moments today!';
+            document.getElementById('footerCopyright').value = f.copyright !== undefined ? f.copyright : '';
+        }
+
+        function updateFooterState() {
+            cmsData.footer = {
+                brand: document.getElementById('footerBrand').value,
+                branches: document.getElementById('footerBranches').value,
+                igName: document.getElementById('footerIgName').value,
+                igUrl: document.getElementById('footerIgUrl').value,
+                ttName: document.getElementById('footerTtName').value,
+                ttUrl: document.getElementById('footerTtUrl').value,
+                cardTitleId: document.getElementById('footerCardTitleId').value,
+                cardTitleEn: document.getElementById('footerCardTitleEn').value,
+                cardDescId: document.getElementById('footerCardDescId').value,
+                cardDescEn: document.getElementById('footerCardDescEn').value,
+                copyright: document.getElementById('footerCopyright').value
+            };
+            persistData();
+        }
+
+        function loadColors() {
+            const c = cmsData.colors || defaultCMS.colors;
+            document.getElementById('pickerPrimary').value = c.primary || '#ff1493'; document.getElementById('hexPrimary').value = c.primary || '#ff1493';
+            document.getElementById('pickerSecondary').value = c.secondary || '#2b4c7e'; document.getElementById('hexSecondary').value = c.secondary || '#2b4c7e';
+            document.getElementById('pickerBg').value = c.bg || '#fff0f5'; document.getElementById('hexBg').value = c.bg || '#fff0f5';
+            document.getElementById('pickerFooter').value = c.footer || '#18171d'; document.getElementById('hexFooter').value = c.footer || '#18171d';
+        }
+
+        function syncColor(type, val) {
+            if (!val.startsWith('#')) return;
+            if (val.length === 7) { const p = document.getElementById('picker' + type); if (p) p.value = val; }
+            const h = document.getElementById('hex' + type); if (h) h.value = val;
+            cmsData.colors = {
+                primary: document.getElementById('hexPrimary').value,
+                secondary: document.getElementById('hexSecondary').value,
+                bg: document.getElementById('hexBg').value,
+                footer: document.getElementById('hexFooter').value
+            };
+            persistData();
+        }
+
+        function resetDefaultColors() {  
+            cmsData.colors = JSON.parse(JSON.stringify(defaultCMS.colors));  
+            loadColors(); saveAllCMS(); showToast('🔄 Warna dikembalikan ke default!');  
+        }
+
+        // ==========================================
+        // 10. RESEND SOFTCOPY (TERHUBUNG LANGSUNG KE GOOGLE SPREADSHEET)
+        // ==========================================
+        let resendList = [];
+        let resendLocalOverrides = {};
+
+        async function saveResendOverrides() {
+            cmsData.resendOverrides = {};
+            localStorage.removeItem('ohsnap_resend_overrides');
+        }
+
+        async function loadResendData() {
+            showToast('🔄 Mengambil data dari Spreadsheet...');
+            localStorage.removeItem('ohsnap_resend_overrides');
+            if (cmsData && cmsData.resendOverrides) {
+                cmsData.resendOverrides = {};
+            }
+            try {
+                const res = await fetch(SCRIPT_URL + '?t=' + Date.now());
+                const data = await res.json();
+                if (data && Array.isArray(data)) {
+                    resendList = data.map((item, idx) => {
+                        item._sheetRow = item._sheetRow || (item.id !== undefined ? Number(item.id) + 1 : idx + 4);
+                        return item;
+                    });
+                } else {
+                    resendList = [];
+                }
+            } catch(e) {
+                console.error('Gagal mengambil data Spreadsheet:', e);
+                resendList = [];
+            }
+            renderResendTable();
+            showToast('✅ Data berhasil diperbarui!');
+        }
+
+        function parseColumnValue(val) {
+            if (!val) return { date: '-', time: '-' };
+            let str = String(val).trim();
+
+            if (str.includes('GMT') || str.includes('UTC') || str.includes('Sat ') || str.includes('Sun ') || str.includes('Mon ') || str.includes('Tue ') || str.includes('Wed ') || str.includes('Thu ') || str.includes('Fri ')) {
+                let d = new Date(str);
+                if (!isNaN(d.getTime())) {
+                    let day = String(d.getDate()).padStart(2, '0');
+                    let month = String(d.getMonth() + 1).padStart(2, '0');
+                    let year = d.getFullYear();
+                    let hours = String(d.getHours()).padStart(2, '0');
+                    let mins = String(d.getMinutes()).padStart(2, '0');
+                    let secs = String(d.getSeconds()).padStart(2, '0');
+                    return { date: `${day}/${month}/${year}`, time: `${hours}:${mins}:${secs}` };
+                }
+            }
+
+            let parts = str.split(/[\sT]+/);
+            let datePart = parts[0] || '-';
+            let timePart = parts[1] || '-';
+
+            if (datePart.includes('-')) {
+                let d = datePart.split('-');
+                if (d[0].length === 4) datePart = `${d[2]}/${d[1]}/${d[0]}`;
+            }
+
+            return { date: datePart, time: timePart !== '-' ? timePart.slice(0, 8) : '-' };
+        }
+
+        function renderResendTable() {
+            const tb = document.getElementById('resendTableBody');  
+            if (!tb) return;
+            tb.innerHTML = '';
+             
+            if (!resendList || resendList.length === 0) {
+                tb.innerHTML = `<tr><td colspan="13" style="text-align:center; padding:20px; color:#999;">Belum ada data resend softcopy.</td></tr>`;
+                return;
+            }
+
+            resendList.forEach((r, i) => {
+                const isSudah = (String(r.tindak_lanjut || r.aksi || '').toLowerCase() === 'sudah');
+                const cleanPhone = String(r.whatsapp || r.no_hp || r.hp || '').replace(/\D/g, '');
+                const formattedPhone = cleanPhone.startsWith('0') ? '62' + cleanPhone.slice(1) : cleanPhone;
+                const linkFoto = r.link_foto || r.foto || r.upload_foto || r.link || '#';
+                const customerEmail = r.email || r.mail || '';
+                const namaCust = r.nama || r.name || 'Pelanggan';
+                const cabangCust = r.cabang || r.branch || '-';
+                 
+                let rawTglMasuk = r.tanggal_masuk || r.tanggal || Object.values(r)[1] || '';
+                let parsedIn = parseColumnValue(rawTglMasuk);
+
+                let rawTglFoto = r.tanggal_foto || Object.values(r)[2] || '';
+                let parsedFotoDate = parseColumnValue(rawTglFoto);
+                let finalTglFoto = parsedFotoDate.date !== '-' ? parsedFotoDate.date : (rawTglFoto || '-');
+
+                let finalJamFoto = '-';
+                let rawJamFoto = r.jam_foto || r.jam || Object.values(r)[3] || '';
+                 
+                if (rawJamFoto !== null && rawJamFoto !== undefined && String(rawJamFoto).trim() !== '') {
+                    let strJam = String(rawJamFoto).trim();
+                    if (strJam.includes('GMT') || strJam.includes('UTC')) {
+                        let d = new Date(strJam);
+                        if (!isNaN(d.getTime())) {
+                            d.setTime(d.getTime() - (25 * 60 * 1000 + 20 * 1000));
+                            let hh = String(d.getHours()).padStart(2, '0');
+                            let mm = String(d.getMinutes()).padStart(2, '0');
+                            let ss = String(d.getSeconds()).padStart(2, '0');
+                            finalJamFoto = `${hh}:${mm}:${ss}`;
+                        } else {
+                            finalJamFoto = strJam.slice(11, 19);
+                        }
+                    } else if (strJam.includes(':')) {
+                        let parts = strJam.split(/[\sT]+/);
+                        finalJamFoto = parts.length > 1 ? parts[1].slice(0, 8) : parts[0].slice(0, 8);
+                    } else {
+                        finalJamFoto = strJam.slice(0, 8);
+                    }
+                }
+
+                const waText = encodeURIComponent(`Halo kak ${namaCust}, berikut link softcopy foto kamu dari OH SNAP! Photobox ya: `);
+                const waUrl = `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${waText}`;
+
+                const senderEmail = "photoboxohsnap.aplikasi@gmail.com";
+                const emailSub = "Link Softcopy Foto OH SNAP! Photobox";
+                const emailBody = `Halo kak ${namaCust},\n\nBerikut kami kirimkan link softcopy foto kamu:\n\nTerima kasih telah berkunjung ke OH SNAP! Photobox!`;
+                const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                const cleanEmail = String(customerEmail || '').trim();
+                const emailUrl = isMobileDevice
+                    ? `mailto:${cleanEmail}?from=${encodeURIComponent(senderEmail)}&subject=${encodeURIComponent(emailSub)}&body=${encodeURIComponent(emailBody)}`
+                    : `https://mail.google.com/mail/?authuser=${encodeURIComponent(senderEmail)}&view=cm&fs=1&to=${encodeURIComponent(cleanEmail)}&su=${encodeURIComponent(emailSub)}&body=${encodeURIComponent(emailBody)}`;
+                const emailTargetAttr = isMobileDevice ? '' : 'target="_blank"';
+
+                tb.innerHTML += `
+                    <tr class="${isSudah?'row-sudah':'row-belum'}">
+                        <td>${i + 1}</td>
+                        <td>${escAttr(parsedIn.date)}</td>
+                        <td>${escAttr(parsedIn.time)}</td>
+                        <td>${escAttr(finalTglFoto)}</td>
+                        <td>${escAttr(finalJamFoto)}</td>
+                        <td>${escAttr(namaCust)}</td>
+                        <td>${escAttr(r.whatsapp || r.no_hp || r.hp || '-')}</td>
+                        <td>${escAttr(customerEmail || '-')}</td>
+                        <td>${escAttr(cabangCust)}</td>
+                        <td>${linkFoto && linkFoto !== '#' ? `<a href="${escAttr(linkFoto)}" target="_blank" class="link-drive">📁 Lihat Foto</a>` : '-'}</td>
+                        <td>
+                            <div class="action-btns-group">
+                                <a href="${escAttr(waUrl)}" target="_blank" class="btn-action-wa">💬 WA</a>
+                                <a href="${escAttr(emailUrl)}" ${emailTargetAttr} class="btn-action-email">✉️ Email</a>
+                            </div>
+                        </td>
+                        <td><button class="btn-toggle-status ${isSudah?'btn-status-sudah':'btn-status-belum'}" onclick="toggleStatus(${i},'${isSudah ? 'Sudah' : 'Belum'}')">${isSudah?'✔ SUDAH':'❗ BELUM'}</button></td>
+                        <td><button class="btn-remove" onclick="delResend(${i})">Hapus</button></td>
+                    </tr>`;
+            });
+        }
+
+        async function toggleStatus(idx, curr) {
+            const r = resendList[idx];
+            if (!r) return;
+            const next = (curr === 'Sudah' || curr === 'SUDAH') ? 'Belum' : 'Sudah';
+            r.tindak_lanjut = next;
+            renderResendTable();
+            showToast('⏳ Memperbarui status di Spreadsheet...');
+
+            const payload = {
+                action: 'updateStatus',
+                status: next,
+                sheetRow: r._sheetRow || '',
+                nama: r.nama || r.name || '',
+                no_hp: r.whatsapp || r.no_hp || r.hp || '',
+                link_foto: r.link_foto || ''
+            };
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                showToast('✅ Status berhasil diubah menjadi ' + next + ' di Spreadsheet!');
+            } catch (e) {
+                showToast('⚠️ Gagal menghubungi Spreadsheet');
+            }
+        }
+
+        async function delResend(idx) {
+            const r = resendList[idx];
+            if (!r) return;
+            if (!confirm(`Hapus permanen data "${r.nama || 'Pelanggan'}" dari Dashboard & Google Spreadsheet?`)) return;
+
+            resendList.splice(idx, 1);
+            renderResendTable();
+            showToast('⏳ Menghapus data dari Google Spreadsheet...');
+
+            const payload = {
+                action: 'delete',
+                sheetRow: r._sheetRow || '',
+                nama: r.nama || r.name || '',
+                no_hp: r.whatsapp || r.no_hp || r.hp || '',
+                link_foto: r.link_foto || ''
+            };
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                showToast('🗑️ Data berhasil dihapus permanen dari Spreadsheet!');
+                setTimeout(() => loadResendData(), 1500);
+            } catch (e) {
+                showToast('⚠️ Gagal menghapus data di Spreadsheet');
+            }
+        }
+
+        function renderAdminTable() {
+            const tb = document.getElementById('adminTableBody');
+            if (!tb) return;
+            tb.innerHTML = '';
+            if (!cmsData.admins || cmsData.admins.length === 0) {
+                tb.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999; padding:15px;">Belum ada akun admin.</td></tr>`;
+                return;
+            }
+            cmsData.admins.forEach((a, i) => {
+                tb.innerHTML += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${escAttr(a.name || a.nama || 'Admin')}</td>
+                        <td>${escAttr(a.username || '-')}</td>
+                        <td>${escAttr(a.pass || '-')}</td>
+                        <td><button class="btn-remove" onclick="deleteAdmin(${i})">Hapus</button></td>
+                    </tr>`;
+            });
+        }
+
+        async function addNewAdmin() {
+            const name = document.getElementById('newAdminName').value.trim();
+            const user = document.getElementById('newAdminUser').value.trim();
+            const pass = document.getElementById('newAdminPass').value.trim();
+
+            if (!name || !user || !pass) {
+                alert('Semua kolom (Nama, Username, dan Password) wajib diisi!');
+                return;
+            }
+
+            if (!cmsData.admins) cmsData.admins = [];
+             
+            const exist = cmsData.admins.some(a => String(a.username).trim().toLowerCase() === user.toLowerCase());
+            if (exist) {
+                alert('Username tersebut sudah terdaftar. Silakan gunakan username lain.');
+                return;
+            }
+
+            cmsData.admins.push({ id: Date.now(), name: name, username: user, pass: pass });
+            clearNewAdminInputs();
+
+            renderAdminTable();
+            await saveAllCMS();
+            showToast('✅ Akun admin baru berhasil ditambahkan & disinkronkan ke Cloud!');
+        }
+
+        async function deleteAdmin(idx) {
+            if (cmsData.admins.length <= 1) {
+                alert('Minimal harus tersisa 1 akun admin aktif!');
+                return;
+            }
+            if (confirm('Apakah Anda yakin ingin menghapus akun admin ini?')) {
+                cmsData.admins.splice(idx, 1);
+                renderAdminTable();
+                await saveAllCMS();
+                showToast('🗑️ Akun admin berhasil dihapus & disinkronkan ke Cloud!');
+            }
+        }
+
+        async function saveAllCMS() {
+            updateBannerState();
+            updateTitlesState();
+            updateFooterState();
+            cmsData.lastUpdated = Date.now();
+            persistData();
+            
+            try {
+                const cleanPayload = cleanDataForCloud(cmsData);
+                const savedCloud = await OhSnapCloud.save(cleanPayload);
+                if (savedCloud && savedCloud.lastUpdated) {
+                    cmsData.lastUpdated = savedCloud.lastUpdated;
+                }
+                markSynced(cmsData);
+                showToast('✅ Berhasil disimpan & disinkronkan ke semua perangkat secara global!');
+            } catch (err) {
+                console.error('Detail Error Simpan Cloud:', err);
+                if (err && err.status) {
+                    const hint = (err.status === 401 || err.status === 403) ? ' - cek RLS/policy & API key' :
+                                 (err.status === 404) ? ' - tabel cms_settings belum dibuat' : '';
+                    showToast('⚠️ Server menolak (' + err.status + ')' + hint);
+                } else {
+                    showToast('⚠️ Tidak bisa menjangkau server cloud (jaringan/DNS/diblokir/project Supabase pause)');
+                }
+            }
+        }
+
+        function comparableCMS(obj) {
+            const c = cleanDataForCloud(obj);
+            delete c.lastUpdated;
+            return JSON.stringify(c);
+        }
+
+        function markSynced(obj) {
+            try {
+                saveCMSBackupToIDB(obj);
+                localStorage.setItem('ohsnap_cloud_snapshot', comparableCMS(obj));
+                localStorage.setItem('ohsnap_cloud_synced_at', String(obj.lastUpdated || Date.now()));
+                localStorage.setItem('ohsnap_cms_data', JSON.stringify(obj));
+            } catch (e) {}
+        }
+
+        function showToast(m) { 
+            const t = document.getElementById('toast'); 
+            t.textContent = m; 
+            t.style.display = 'block'; 
+            setTimeout(() => t.style.display = 'none', 4000); 
+        }
+
+        function logoutAdmin() { 
+            localStorage.removeItem('ohsnap_admin_logged'); 
+            sessionStorage.removeItem('ohsnap_admin_logged');
+            sessionStorage.removeItem('ohsnap_admin_active');
+            sessionStorage.removeItem('ohsnap_login_ticket');
+            window.location.replace('login.html'); 
+        }
+
+        function initAllRenders() {
+            loadBannerByPage();
+            loadTitlesState();
+            renderVideos();
+            renderStudios();
+            renderPromos();
+            renderFrames();
+            renderServices();
+            renderLocations();
+            loadFooterState();
+            loadColors();
+            renderAdminTable();
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            let localData = loadSavedCMS();
+            let idbBackup = await getMediaFromIDB('cms_full_backup');
+            
+            if (idbBackup && idbBackup.lastUpdated && (!localData.lastUpdated || idbBackup.lastUpdated >= localData.lastUpdated)) {
+                localData = mergeWithDefault(idbBackup);
+            }
+            cmsData = localData;
+
+            initAllRenders();
+            clearNewAdminInputs();
+            setTimeout(clearNewAdminInputs, 250);
+
+            try {
+                const remote = await OhSnapCloud.load(true);
+                if (remote && Object.keys(remote).length > 0) {
+                    cmsData = mergeWithDefault(remote);
+                    cmsData.lastUpdated = Number(remote.lastUpdated || Date.now());
+                    saveCMSBackupToIDB(cmsData);
+                    markSynced(cmsData);
+                    initAllRenders();
+                    clearNewAdminInputs();
+                    showToast('☁️ Terhubung ke Cloud & data terbaru berhasil disinkronkan!');
+                } else {
+                    const initialPayload = cleanDataForCloud(cmsData);
+                    await OhSnapCloud.save(initialPayload);
+                    markSynced(cmsData);
+                    showToast('☁️ Cloud siap! Data awal berhasil disinkronkan ke Supabase.');
+                }
+            } catch (e) {
+                console.warn('Gagal menarik data cloud:', e);
+                showToast('⚠️ Tidak bisa menjangkau cloud - memakai data lokal browser ini');
+            }
+
+            loadResendData();
+        });
+    </script>
+</body>
+</html>
