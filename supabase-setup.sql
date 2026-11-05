@@ -1,340 +1,173 @@
--- ============================================================================
--- OH SNAP! PHOTOBOX - SUPABASE SECURE SETUP (RLS + SERVER-SIDE AUTH RPC)
--- Jalankan seluruh skrip ini di Supabase Dashboard -> SQL Editor -> Run
--- ============================================================================
+-- =====================================================================
+--  OH SNAP! Photobox - SETUP KEAMANAN SUPABASE (v6)
+--  Jalankan SEKALI di: Supabase Dashboard -> SQL Editor -> New query -> Run
+--  Aman dijalankan ulang (idempotent).
+--
+--  YANG BERUBAH DIBANDINGKAN SCRIPT LAMA:
+--    - RLS dinyalakan. Pengunjung (anon) hanya boleh MEMBACA konten.
+--    - Hanya admin yang login (email terdaftar di tabel cms_admins) yang boleh
+--      mengubah konten & mengunggah/menghapus file.
+--    - Kolom "admins" (berisi password polos) dihapus dari data CMS yang sudah ada.
+--    - updated_at diisi otomatis oleh server (dipakai untuk deteksi bentrok antar-admin).
+--    - Bucket hanya menerima gambar & video; daftar isi bucket tidak bisa dilihat publik.
+--
+--  >>> WAJIB: ganti email di LANGKAH 2 dengan email admin Anda sebelum Run <<<
+-- =====================================================================
 
-create extension if not exists pgcrypto;
 
--- 1. Tabel Publik CMS Settings (Hanya Boleh Dibaca Publik, Tulis Wajib Token Admin)
+-- ---------------------------------------------------------------------
+-- LANGKAH 1. Tabel daftar admin (tidak bisa diakses lewat API publik)
+-- ---------------------------------------------------------------------
+create table if not exists public.cms_admins (
+  email text primary key
+);
+alter table public.cms_admins enable row level security;   -- tanpa policy = tertutup untuk anon & authenticated
+revoke all on table public.cms_admins from anon, authenticated;
+
+
+-- ---------------------------------------------------------------------
+-- LANGKAH 2. DAFTARKAN EMAIL ADMIN  (EDIT BAGIAN INI)
+--   Email harus sama persis dengan akun yang Anda buat di
+--   Authentication -> Users -> Add user. Boleh lebih dari satu:
+--   array['admin1@gmail.com', 'admin2@gmail.com']
+-- ---------------------------------------------------------------------
+do $$
+declare
+  admin_emails text[] := array['GANTI-DENGAN-EMAIL-ADMIN@gmail.com'];   -- <<< EDIT DI SINI
+begin
+  if exists (select 1 from unnest(admin_emails) e where e ilike 'GANTI-DENGAN%') then
+    raise exception 'Belum diedit: ganti GANTI-DENGAN-EMAIL-ADMIN@gmail.com dengan email admin Anda di LANGKAH 2, lalu Run lagi.';
+  end if;
+  insert into public.cms_admins (email)
+  select lower(trim(e)) from unnest(admin_emails) e
+  on conflict (email) do nothing;
+end $$;
+
+
+-- ---------------------------------------------------------------------
+-- LANGKAH 3. Fungsi pengecek admin
+-- ---------------------------------------------------------------------
+create or replace function public.is_cms_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select
+    coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false) = false
+    and exists (
+      select 1 from public.cms_admins a
+      where lower(a.email) = lower(coalesce(auth.jwt() ->> 'email', ''))
+    );
+$$;
+revoke all on function public.is_cms_admin() from public;
+grant execute on function public.is_cms_admin() to authenticated;
+
+
+-- ---------------------------------------------------------------------
+-- LANGKAH 4. Tabel konten website (cms_settings)
+-- ---------------------------------------------------------------------
 create table if not exists public.cms_settings (
   id int primary key,
   data jsonb not null,
-  updated_at timestamptz default now()
+  updated_at timestamptz not null default now()
 );
 
-alter table public.cms_settings enable row level security;
+-- Cadangan sekali jalan (TANPA kolom admins/password) - jaga-jaga bila ingin kembali ke data sebelumnya
+create table if not exists public.cms_settings_backup_v5 as
+  select id, (data - 'admins') as data, updated_at, now() as backed_up_at
+  from public.cms_settings;
+alter table public.cms_settings_backup_v5 enable row level security;
+revoke all on table public.cms_settings_backup_v5 from anon, authenticated;
 
-drop policy if exists "cms public read" on public.cms_settings;
-drop policy if exists "cms anon write" on public.cms_settings;
-drop policy if exists "cms anon update" on public.cms_settings;
+-- Hapus password admin lama yang tadinya tersimpan di dalam data CMS (dulu terbaca publik)
+update public.cms_settings
+   set data = data - 'admins' - 'resendOverrides'
+ where data ? 'admins' or data ? 'resendOverrides';
 
-create policy "cms public read" on public.cms_settings
-  for select to anon, authenticated
-  using (id = 1);
-
-revoke all on table public.cms_settings from anon, authenticated;
-grant select on table public.cms_settings to anon, authenticated;
-grant all on table public.cms_settings to service_role;
-
--- 2. Tabel Privat Akun Admin & Sesi Login (100% Tertutup dari Akses Publik/Anon)
-create table if not exists public.cms_admins (
-  id bigserial primary key,
-  name text not null,
-  username text not null unique,
-  pass_hash text not null,
-  created_at timestamptz default now()
-);
-
-create table if not exists public.cms_admin_sessions (
-  token text primary key,
-  admin_id bigint references public.cms_admins(id) on delete cascade,
-  username text not null,
-  created_at timestamptz default now(),
-  expires_at timestamptz not null
-);
-
-alter table public.cms_admins enable row level security;
-alter table public.cms_admin_sessions enable row level security;
-
-revoke all on table public.cms_admins from anon, authenticated;
-revoke all on table public.cms_admin_sessions from anon, authenticated;
-grant all on table public.cms_admins to service_role;
-grant all on table public.cms_admin_sessions to service_role;
-
--- 3. Migrasi otomatis akun admin lama dari cms_settings (jika ada) & bersihkan dari JSON publik
-do $$
-declare
-  v_adm jsonb;
-  v_user text;
-  v_name text;
-  v_pass text;
+-- updated_at diisi server, bukan jam perangkat admin
+create or replace function public.cms_touch_updated_at()
+returns trigger
+language plpgsql
+as $$
 begin
-  if exists (select 1 from public.cms_settings where id = 1 and data ? 'admins') then
-    for v_adm in select * from jsonb_array_elements((select data->'admins' from public.cms_settings where id = 1))
-    loop
-      v_user := lower(trim(coalesce(v_adm->>'username', '')));
-      v_name := trim(coalesce(v_adm->>'name', v_adm->>'nama', 'Admin'));
-      v_pass := trim(coalesce(v_adm->>'pass', v_adm->>'password', ''));
-      if v_user <> '' and v_pass <> '' then
-        insert into public.cms_admins (name, username, pass_hash)
-        values (
-          v_name,
-          v_user,
-          case
-            when v_pass like '$2%' then v_pass
-            else crypt(v_pass, gen_salt('bf'))
-          end
-        )
-        on conflict (username) do nothing;
-      end if;
-    end loop;
+  new.updated_at := now();
+  return new;
+end;
+$$;
 
-    update public.cms_settings
-    set data = (data - 'admins') - 'resendOverrides'
-    where id = 1;
-  end if;
+drop trigger if exists cms_settings_touch on public.cms_settings;
+create trigger cms_settings_touch
+  before insert or update on public.cms_settings
+  for each row execute function public.cms_touch_updated_at();
 
-  -- Pastikan minimal ada 1 Super Admin bawaan jika tabel masih kosong
-  if not exists (select 1 from public.cms_admins) then
-    insert into public.cms_admins (name, username, pass_hash)
-    values ('Super Admin', 'admin', crypt('ohsnap', gen_salt('bf')));
-  end if;
+-- RLS: bersihkan semua policy lama lalu pasang yang baru
+alter table public.cms_settings enable row level security;
+do $$
+declare p record;
+begin
+  for p in select policyname from pg_policies where schemaname = 'public' and tablename = 'cms_settings' loop
+    execute format('drop policy %I on public.cms_settings', p.policyname);
+  end loop;
 end $$;
 
--- 4. Fungsi Helper & RPC Keamanan Server-Side (SECURITY DEFINER)
-create or replace function public.has_active_admin_session()
-returns boolean
-language sql
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1 from public.cms_admin_sessions
-    where expires_at > now()
-  );
-$$;
+create policy "cms baca publik"   on public.cms_settings for select to anon, authenticated using (id = 1);
+create policy "cms tambah admin"  on public.cms_settings for insert to authenticated with check (id = 1 and public.is_cms_admin());
+create policy "cms ubah admin"    on public.cms_settings for update to authenticated using (id = 1 and public.is_cms_admin()) with check (id = 1 and public.is_cms_admin());
+-- (tidak ada policy DELETE: baris konten tidak bisa dihapus lewat API)
 
-create or replace function public.verify_admin_login(p_username text, p_password text)
-returns jsonb
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  v_admin public.cms_admins%rowtype;
-  v_token text;
-  v_sha256 text;
-begin
-  delete from public.cms_admin_sessions where expires_at <= now();
+revoke all on table public.cms_settings from anon, authenticated;
+grant select on table public.cms_settings to anon;
+grant select, insert, update on table public.cms_settings to authenticated;
 
-  select * into v_admin
-  from public.cms_admins
-  where lower(username) = lower(trim(coalesce(p_username, '')))
-  limit 1;
 
-  if not found then
-    return jsonb_build_object('ok', false, 'error', 'Username atau Password salah!');
-  end if;
-
-  v_sha256 := 'sha256:' || encode(digest('ohsnap_salt_' || coalesce(p_password, ''), 'sha256'), 'hex');
-
-  if v_admin.pass_hash = crypt(coalesce(p_password, ''), v_admin.pass_hash)
-     or v_admin.pass_hash = crypt(v_sha256, v_admin.pass_hash) then
-    -- Upgrade ke bcrypt murni jika sebelumnya tersimpan dari hash sha256
-    if v_admin.pass_hash = crypt(v_sha256, v_admin.pass_hash) then
-      update public.cms_admins
-      set pass_hash = crypt(coalesce(p_password, ''), gen_salt('bf'))
-      where id = v_admin.id;
-    end if;
-
-    v_token := encode(gen_random_bytes(32), 'hex');
-    insert into public.cms_admin_sessions (token, admin_id, username, expires_at)
-    values (v_token, v_admin.id, v_admin.username, now() + interval '12 hours');
-
-    return jsonb_build_object(
-      'ok', true,
-      'token', v_token,
-      'resendKey', 'ohsnap_resend_sec_2026',
-      'user', jsonb_build_object('id', v_admin.id, 'name', v_admin.name, 'username', v_admin.username)
-    );
-  end if;
-
-  return jsonb_build_object('ok', false, 'error', 'Username atau Password salah!');
-end;
-$$;
-
-create or replace function public.logout_admin_session(p_token text)
-returns boolean
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  delete from public.cms_admin_sessions where token = coalesce(p_token, '');
-  return true;
-end;
-$$;
-
-create or replace function public.save_cms_secure(
-  p_token text,
-  p_data jsonb,
-  p_expected_min_time bigint default 0
-)
-returns jsonb
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  v_session public.cms_admin_sessions%rowtype;
-  v_current jsonb;
-  v_current_time bigint;
-  v_new_time bigint;
-  v_clean jsonb;
-begin
-  select * into v_session
-  from public.cms_admin_sessions
-  where token = coalesce(p_token, '') and expires_at > now()
-  limit 1;
-
-  if not found then
-    raise exception 'UNAUTHORIZED: Sesi admin tidak valid atau sudah berakhir. Silakan login kembali.';
-  end if;
-
-  -- Perpanjang masa aktif sesi saat admin aktif bekerja
-  update public.cms_admin_sessions set expires_at = now() + interval '12 hours' where token = v_session.token;
-
-  select data into v_current from public.cms_settings where id = 1;
-  v_current_time := coalesce((v_current->>'lastUpdated')::bigint, 0);
-
-  if p_expected_min_time > 0 and v_current_time > p_expected_min_time then
-    raise exception 'CONFLICT: Data di Cloud lebih baru (diubah oleh admin/perangkat lain). Muat ulang halaman terlebih dahulu.';
-  end if;
-
-  v_new_time := (extract(epoch from now()) * 1000)::bigint;
-  v_clean := ((coalesce(p_data, '{}'::jsonb) - 'admins') - 'resendOverrides') || jsonb_build_object('lastUpdated', v_new_time);
-
-  insert into public.cms_settings (id, data, updated_at)
-  values (1, v_clean, now())
-  on conflict (id) do update
-  set data = excluded.data,
-      updated_at = excluded.updated_at;
-
-  return v_clean;
-end;
-$$;
-
-create or replace function public.list_admins_secure(p_token text)
-returns jsonb
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  if not exists (select 1 from public.cms_admin_sessions where token = coalesce(p_token, '') and expires_at > now()) then
-    raise exception 'UNAUTHORIZED: Sesi admin tidak valid.';
-  end if;
-
-  return coalesce(
-    (select jsonb_agg(jsonb_build_object('id', id, 'name', name, 'username', username) order by id asc) from public.cms_admins),
-    '[]'::jsonb
-  );
-end;
-$$;
-
-create or replace function public.add_admin_secure(p_token text, p_name text, p_username text, p_password text)
-returns jsonb
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  v_clean_user text;
-begin
-  if not exists (select 1 from public.cms_admin_sessions where token = coalesce(p_token, '') and expires_at > now()) then
-    raise exception 'UNAUTHORIZED: Sesi admin tidak valid.';
-  end if;
-
-  v_clean_user := lower(trim(coalesce(p_username, '')));
-  if v_clean_user = '' or trim(coalesce(p_name, '')) = '' or trim(coalesce(p_password, '')) = '' then
-    raise exception 'Semua kolom (Nama, Username, Password) wajib diisi.';
-  end if;
-
-  if exists (select 1 from public.cms_admins where lower(username) = v_clean_user) then
-    raise exception 'Username tersebut sudah terdaftar.';
-  end if;
-
-  insert into public.cms_admins (name, username, pass_hash)
-  values (trim(p_name), v_clean_user, crypt(trim(p_password), gen_salt('bf')));
-
-  return public.list_admins_secure(p_token);
-end;
-$$;
-
-create or replace function public.delete_admin_secure(p_token text, p_admin_id bigint)
-returns jsonb
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  if not exists (select 1 from public.cms_admin_sessions where token = coalesce(p_token, '') and expires_at > now()) then
-    raise exception 'UNAUTHORIZED: Sesi admin tidak valid.';
-  end if;
-
-  if (select count(*) from public.cms_admins) <= 1 then
-    raise exception 'Minimal harus tersisa 1 akun admin aktif!';
-  end if;
-
-  delete from public.cms_admins where id = p_admin_id;
-  return public.list_admins_secure(p_token);
-end;
-$$;
-
-grant execute on function public.has_active_admin_session() to anon, authenticated;
-grant execute on function public.verify_admin_login(text, text) to anon, authenticated;
-grant execute on function public.logout_admin_session(text) to anon, authenticated;
-grant execute on function public.save_cms_secure(text, jsonb, bigint) to anon, authenticated;
-grant execute on function public.list_admins_secure(text) to anon, authenticated;
-grant execute on function public.add_admin_secure(text, text, text, text) to anon, authenticated;
-grant execute on function public.delete_admin_secure(text, bigint) to anon, authenticated;
-
--- 5. Bucket Storage ohsnap-media (Batas 50MB, Hanya Gambar/Video, Tulis/Hapus Wajib Sesi Admin Aktif)
+-- ---------------------------------------------------------------------
+-- LANGKAH 5. Storage bucket ohsnap-media
+--   Publik untuk DIBACA lewat URL (agar gambar/video tampil), tapi hanya
+--   admin yang boleh upload/ubah/hapus. Maks 50 MB per file.
+-- ---------------------------------------------------------------------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
-  'ohsnap-media',
-  'ohsnap-media',
-  true,
-  52428800,
-  ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm', 'video/quicktime']
+  'ohsnap-media', 'ohsnap-media', true, 52428800,
+  array['image/jpeg','image/png','image/webp','image/gif','video/*']
 )
-on conflict (id) do update set 
-  public = true, 
-  file_size_limit = 52428800, 
-  allowed_mime_types = ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm', 'video/quicktime'];
+on conflict (id) do update set
+  public = true,
+  file_size_limit = 52428800,
+  allowed_mime_types = array['image/jpeg','image/png','image/webp','image/gif','video/*'];
 
-drop policy if exists "media public read" on storage.objects;
+-- Policy lama yang terbuka untuk semua orang
+drop policy if exists "media public read"   on storage.objects;
 drop policy if exists "media public upload" on storage.objects;
 drop policy if exists "media public update" on storage.objects;
 drop policy if exists "media public delete" on storage.objects;
-drop policy if exists "media admin upload" on storage.objects;
-drop policy if exists "media admin update" on storage.objects;
-drop policy if exists "media admin delete" on storage.objects;
+-- Policy baru (aman dijalankan ulang)
+drop policy if exists "ohsnap media admin select" on storage.objects;
+drop policy if exists "ohsnap media admin insert" on storage.objects;
+drop policy if exists "ohsnap media admin update" on storage.objects;
+drop policy if exists "ohsnap media admin delete" on storage.objects;
 
-create policy "media public read" on storage.objects
-  for select to public
-  using (bucket_id = 'ohsnap-media');
+-- Catatan: file di bucket publik tetap bisa dibuka lewat URL-nya tanpa policy select.
+-- Policy select di bawah hanya untuk admin (dibutuhkan fitur upload-ganti/upsert) dan
+-- mencegah orang asing melihat DAFTAR seluruh isi bucket.
+create policy "ohsnap media admin select" on storage.objects for select to authenticated
+  using (bucket_id = 'ohsnap-media' and public.is_cms_admin());
+create policy "ohsnap media admin insert" on storage.objects for insert to authenticated
+  with check (bucket_id = 'ohsnap-media' and public.is_cms_admin());
+create policy "ohsnap media admin update" on storage.objects for update to authenticated
+  using (bucket_id = 'ohsnap-media' and public.is_cms_admin())
+  with check (bucket_id = 'ohsnap-media' and public.is_cms_admin());
+create policy "ohsnap media admin delete" on storage.objects for delete to authenticated
+  using (bucket_id = 'ohsnap-media' and public.is_cms_admin());
 
-create policy "media admin upload" on storage.objects
-  for insert to public
-  with check (
-    bucket_id = 'ohsnap-media'
-    and (storage.foldername(name))[1] in ('img', 'video')
-    and (auth.role() = 'authenticated' or public.has_active_admin_session())
-  );
 
-create policy "media admin update" on storage.objects
-  for update to public
-  using (
-    bucket_id = 'ohsnap-media'
-    and (storage.foldername(name))[1] in ('img', 'video')
-    and (auth.role() = 'authenticated' or public.has_active_admin_session())
-  );
-
-create policy "media admin delete" on storage.objects
-  for delete to public
-  using (
-    bucket_id = 'ohsnap-media'
-    and (storage.foldername(name))[1] in ('img', 'video')
-    and (auth.role() = 'authenticated' or public.has_active_admin_session())
-  );
+-- ---------------------------------------------------------------------
+-- LANGKAH 6. Pemeriksaan (hasil harus: rls_aktif = true, admin terdaftar muncul,
+--            dan policy cms_settings berjumlah 3)
+-- ---------------------------------------------------------------------
+select
+  (select relrowsecurity from pg_class where oid = 'public.cms_settings'::regclass) as rls_aktif,
+  (select count(*) from pg_policies where schemaname = 'public' and tablename = 'cms_settings') as jumlah_policy,
+  (select string_agg(email, ', ') from public.cms_admins) as admin_terdaftar,
+  (select (data ? 'admins') from public.cms_settings where id = 1) as masih_ada_password_di_data;

@@ -4,22 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resend Softcopy - OH SNAP! Photobox</title>
-    <meta name="description" content="Permintaan Resend Softcopy Foto OH SNAP! Photobox.">
-    <meta property="og:title" content="Resend Softcopy - OH SNAP! Photobox">
-    <meta property="og:description" content="Permintaan Resend Softcopy Foto OH SNAP! Photobox.">
+    <meta name="description" content="Formulir permintaan kirim ulang softcopy foto OH SNAP! Photobox.">
+    <meta name="theme-color" content="#ff1493">
+    <link rel="icon" href="images/logo-icon.jpg">
     <meta property="og:type" content="website">
-    <link rel="icon" type="image/jpeg" href="images/logo-icon.jpg">
+    <meta property="og:site_name" content="OH SNAP! Photobox">
+    <meta property="og:description" content="Formulir permintaan kirim ulang softcopy foto OH SNAP! Photobox.">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
-        (function() {
+        (function () {
             try {
-                const saved = JSON.parse(localStorage.getItem('ohsnap_cms_data'));
+                var raw = localStorage.getItem('ohsnap_cms_data');
+                var saved = raw ? JSON.parse(raw) : null;
+                var root = document.documentElement;
+                var ok = function (v) { return typeof v === 'string' && /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v.trim()); };
                 if (saved && saved.colors) {
-                    const r = document.documentElement.style;
-                    if (saved.colors.primary) r.setProperty('--primary', saved.colors.primary);
-                    if (saved.colors.secondary) r.setProperty('--secondary', saved.colors.secondary);
-                    if (saved.colors.bg) r.setProperty('--bg-main', saved.colors.bg);
-                    if (saved.colors.footer) r.setProperty('--footer-bg', saved.colors.footer);
+                    var c = saved.colors, r = root.style;
+                    if (ok(c.primary)) r.setProperty('--primary', c.primary.trim());
+                    if (ok(c.secondary)) r.setProperty('--secondary', c.secondary.trim());
+                    if (ok(c.bg)) r.setProperty('--bg-main', c.bg.trim());
+                    if (ok(c.footer)) r.setProperty('--footer-bg', c.footer.trim());
+                }
+                if (!saved) {
+                    // Pengunjung baru: tahan tampil sebentar sampai data Cloud masuk (maks 3,5 dtk)
+                    root.classList.add('awaiting-first-cloud');
+                    setTimeout(function () { root.classList.remove('awaiting-first-cloud'); }, 3500);
                 }
             } catch (e) {}
         })();
@@ -31,7 +40,7 @@
         header { display: flex; justify-content: space-between; align-items: center; height: 85px; padding: 0 4%; background: var(--primary); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
         .logo-container { display: flex; align-items: center; gap: 12px; text-decoration: none; z-index: 1001; }
         .brand-logo-img { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; border: 2px solid #fff; }
-        .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: 2px; color: #fff; white-space: nowrap; transition: color 0.25s; }
+        .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: 2px; color: #fff; }
         .logo span { color: #ffe4e6; }
         .nav-container { display: flex; align-items: center; gap: 25px; }
         .nav-menu { display: flex; align-items: center; gap: 24px; }
@@ -46,7 +55,7 @@
         .form-section { max-width: 700px; margin: 50px auto; padding: 0 5%; }
         .resend-card { background: #fff; border: 1px solid #fbcfe8; border-radius: 24px; padding: 40px; box-shadow: 0 10px 30px rgba(255,182,193,0.2); }
         .resend-card h2 { font-size: 1.8rem; font-weight: 800; color: var(--secondary); margin-bottom: 8px; text-align: center; }
-        .resend-card p.subtitle { text-align: center; color: #9ca3af; font-size: 0.95rem; margin-bottom: 30px; }
+        .resend-card p.subtitle { text-align: center; color: #6b7280; font-size: 0.95rem; margin-bottom: 30px; }
 
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 0.9rem; font-weight: 700; color: var(--secondary); margin-bottom: 8px; }
@@ -81,9 +90,12 @@
         .footer-location-card h4 { color: #fff; font-size: 1.25rem; margin-bottom: 12px; }
         .footer-location-card p { color: #9ca3af; font-size: 0.95rem; margin-bottom: 22px; }
         .location-btn-action { background: var(--primary); color: #fff; padding: 12px 28px; border-radius: 50px; font-weight: 700; }
-        .footer-bottom { max-width: 1300px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 0.85rem; color: #9ca3af; }
+        .footer-bottom { max-width: 1300px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 0.85rem; color: #6b7280; }
 
-        @media screen and (max-width: 768px) {
+        .nav-overlay { display: none; }
+        .logo, .nav-menu a { white-space: nowrap; }
+
+        @media screen and (max-width: 1100px) {
             .menu-toggle { display: flex; }
             .nav-container { position: fixed; top: 0; left: -100%; width: 260px; height: 100vh; background: #fff; flex-direction: column; align-items: flex-start; padding: 90px 25px; transition: 0.3s; z-index: 999; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
             .nav-container.active { left: 0; }
@@ -92,22 +104,17 @@
             .lang-switcher { width: 100%; justify-content: center; background: #fdf2f8; border: 1px solid #fbcfe8; padding: 6px; }
             .lang-btn { color: var(--secondary); width: 50%; text-align: center; }
             .lang-btn.active { background: var(--primary); color: #ffffff; }
+            .nav-container { height: 100vh; height: 100dvh; visibility: hidden; transition: left 0.3s ease, visibility 0s linear 0.3s; }
+            .nav-container.active { visibility: visible; transition: left 0.3s ease, visibility 0s; }
+            header.nav-open .logo { color: var(--secondary); }
+            header.nav-open .logo span { color: var(--primary); }
+            .menu-toggle { box-sizing: content-box; padding: 11px 8px; margin: -11px -8px; }
+            .nav-overlay { display: block; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.35); z-index: 998; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+            .nav-overlay.active { opacity: 1; pointer-events: auto; }
+        }
+        @media screen and (max-width: 768px) {
             .resend-card { padding: 25px; }
             .footer-content { grid-template-columns: 1fr; }
-        }
-    
-        @media screen and (max-width: 1024px) {
-            .menu-toggle { display: flex; width: 40px; height: 40px; padding: 9px 6px; align-items: center; justify-content: space-between; }
-            .nav-container { position: fixed; top: 0; left: -100%; width: 260px; height: 100vh; background: #fff; flex-direction: column; align-items: flex-start; padding: 90px 25px; transition: left 0.3s ease, visibility 0.3s; z-index: 999; box-shadow: 10px 0 30px rgba(0,0,0,0.1); visibility: hidden; }
-            .nav-container.active { left: 0; visibility: visible; }
-            .nav-menu { flex-direction: column; width: 100%; }
-            .nav-menu a { color: var(--secondary); padding: 14px 0; border-bottom: 1px solid #f3f4f6; width: 100%; }
-            .lang-switcher { width: 100%; justify-content: center; background: #fdf2f8; border: 1px solid #fbcfe8; padding: 6px; }
-            .lang-btn { color: var(--secondary); width: 50%; text-align: center; }
-            .lang-btn.active { background: var(--primary); color: #ffffff; }
-            body.menu-open .logo { color: var(--secondary); }
-            body.menu-open .logo span { color: var(--primary); }
-            body.menu-open .brand-logo-img { border-color: var(--primary); }
         }
     </style>
 </head>
@@ -117,7 +124,7 @@
             <img src="images/logo-icon.jpg" alt="OH SNAP! Logo" class="brand-logo-img" onerror="this.style.display='none'">
             <span class="logo">OH SNAP<span>!</span></span>
         </a>
-        <button class="menu-toggle" id="menuToggle" aria-label="Buka Menu Navigasi" aria-expanded="false"><span></span><span></span><span></span></button>
+        <button type="button" class="menu-toggle" id="menuToggle" aria-label="Menu"><span></span><span></span><span></span></button>
         <div class="nav-container" id="navContainer">
             <nav class="nav-menu">
                 <a href="index.html" data-en="Home" data-id="Halaman">Halaman</a>
@@ -128,8 +135,8 @@
                 <a href="kontak.html" data-en="Contact" data-id="Kontak">Kontak</a>
             </nav>
             <div class="lang-switcher">
-                <button class="lang-btn" id="btnEN" onclick="setLanguage('en')">EN</button>
-                <button class="lang-btn active" id="btnID" onclick="setLanguage('id')">ID</button>
+                <button type="button" class="lang-btn" id="btnEN" aria-label="English" onclick="setLanguage('en')">EN</button>
+                <button type="button" class="lang-btn active" id="btnID" aria-label="Bahasa Indonesia" onclick="setLanguage('id')">ID</button>
             </div>
         </div>
     </header>
@@ -140,17 +147,18 @@
             <p class="subtitle" data-en="Please fill out the form below accurately" data-id="Mohon isi form di bawah ini dengan data yang benar">Mohon isi form di bawah ini dengan data yang benar</p>
             
             <form id="resendForm" onsubmit="submitResend(event)">
+                <div aria-hidden="true" style="position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;"><label>Website <input type="text" id="resWebsite" name="website" tabindex="-1" autocomplete="off"></label></div>
                 <div class="form-group">
                     <label data-en="Full Name" data-id="Nama Lengkap">Nama Lengkap</label>
-                    <input type="text" id="resName" required placeholder="Masukkan nama lengkap">
+                    <input type="text" id="resName" required maxlength="100" autocomplete="name" placeholder="Masukkan nama lengkap">
                 </div>
                 <div class="form-group">
                     <label data-en="Active Email" data-id="Alamat Email Aktif">Alamat Email Aktif</label>
-                    <input type="email" id="resEmail" required placeholder="contoh@gmail.com">
+                    <input type="email" id="resEmail" required maxlength="120" autocomplete="email" placeholder="contoh@gmail.com">
                 </div>
                 <div class="form-group">
                     <label data-en="WhatsApp Number" data-id="Nomor WhatsApp">Nomor WhatsApp</label>
-                    <input type="text" id="resWa" required placeholder="0812xxxxxxxx">
+                    <input type="text" id="resWa" required maxlength="20" inputmode="tel" autocomplete="tel" placeholder="0812xxxxxxxx">
                 </div>
                 <div class="form-group">
                     <label data-en="Studio / Branch Location" data-id="Lokasi Cabang Studio">Lokasi Cabang Studio</label>
@@ -192,8 +200,8 @@
             <div class="footer-left">
                 <h3 id="fBrand">OH SNAP! Photobox Group</h3>
                 <address><strong data-en="Branches:" data-id="Cabang:">Cabang:</strong> <span id="fBranches">Kediri Mall Lt.5, Plaza Cilacap Lt.3</span></address>
-                <p>Instagram: <a id="fIg" href="#" target="_blank">@ohsnap_photobox</a></p>
-                <p>TikTok: <a id="fTt" href="#" target="_blank">@ohsnap_photobox</a></p>
+                <p>Instagram: <a id="fIg" href="#" target="_blank" rel="noopener noreferrer">@ohsnap_photobox</a></p>
+                <p>TikTok: <a id="fTt" href="#" target="_blank" rel="noopener noreferrer">@ohsnap_photobox</a></p>
                 <div class="footer-helpdesk">
                     <h4 data-en="Helpdesk" data-id="Bantuan">Helpdesk</h4>
                     <ul>
@@ -213,203 +221,167 @@
 
     <script src="cms-cloud.js"></script>
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz9ETLJbD2e33NI0rCeHVgL5pr606vOagdd1lfVY1WEyLaKZx48dc7DpZnIGJDwGJ3x/exec';
+        (function () {
+            const U = OhSnapCloud.util;
+            const esc = U.escHtml;
+            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyum2HVg2InZDhEyeata3I2hTbPUQzzqyKHsEtgA9Z3vRCF2CeTjwzGTCHd4tszlOMm/exec';
+            const MAX_PHOTO_BYTES = 15 * 1024 * 1024;
+            const COOLDOWN_MS = 30000;
 
-        let currentLang = 'id';
-        try { currentLang = localStorage.getItem('siteLang') || 'id'; } catch (e) {}
-        let cms = null;
-        try { cms = JSON.parse(localStorage.getItem('ohsnap_cms_data')); } catch (e) {}
-        let lastRenderedSignature = '';
+            let page = null;
+            const L = () => (page ? page.getLang() : 'id');
+            const T = (id, en) => (L() === 'en' ? en : id);
 
-        function escHtml(str) {
-            if (str === null || str === undefined) return '';
-            return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        }
+            let uploadedPhotoBase64 = '';
+            let uploadedPhotoName = '';
+            let photoBusy = false;
 
-        (function() {
-            const btn = document.getElementById('menuToggle');
-            const nav = document.getElementById('navContainer');
-            if (!btn || !nav) return;
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isOpen = nav.classList.toggle('active');
-                document.body.classList.toggle('menu-open', isOpen);
-                btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-            });
-            document.addEventListener('click', (e) => {
-                if (nav.classList.contains('active') && !nav.contains(e.target) && !btn.contains(e.target)) {
-                    nav.classList.remove('active');
-                    document.body.classList.remove('menu-open');
-                    btn.setAttribute('aria-expanded', 'false');
-                }
-            });
-        })();
+            // tanggal foto tidak boleh di masa depan
+            (function () {
+                const d = new Date();
+                const iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                document.getElementById('resDate').max = iso;
+            })();
 
-        let uploadedPhotoBase64 = '';
-        let uploadedPhotoName = '';
-        function previewPhoto(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            uploadedPhotoName = file.name;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const maxDim = 1000;
-                    let w = img.width, h = img.height;
-                    if (w > maxDim || h > maxDim) {
-                        if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
-                        else { w = Math.round((w * maxDim) / h); h = maxDim; }
-                    }
-                    canvas.width = w;
-                    canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, w, h);
-                    ctx.drawImage(img, 0, 0, w, h);
-                    uploadedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.75);
-                    document.getElementById('photoPreview').src = uploadedPhotoBase64;
-                    document.getElementById('previewBox').style.display = 'block';
-                };
-                img.onerror = function() {
-                    uploadedPhotoBase64 = e.target.result;
-                    document.getElementById('photoPreview').src = uploadedPhotoBase64;
-                    document.getElementById('previewBox').style.display = 'block';
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
+            function showPreview(dataUrl) {
+                document.getElementById('photoPreview').src = dataUrl;
+                document.getElementById('previewBox').style.display = 'block';
+            }
 
-        function removePhoto() {
-            uploadedPhotoBase64 = '';
-            uploadedPhotoName = '';
-            document.getElementById('resPhoto').value = '';
-            document.getElementById('photoPreview').src = '';
-            document.getElementById('previewBox').style.display = 'none';
-        }
-
-        async function submitResend(event) {
-            event.preventDefault();
-            try {
-                const lastSent = Number(sessionStorage.getItem('ohsnap_last_resend_ts') || 0);
-                if (Date.now() - lastSent < 30000) {
-                    const sisa = Math.ceil((30000 - (Date.now() - lastSent)) / 1000);
-                    alert('⏳ Mohon tunggu ' + sisa + ' detik sebelum mengirim permintaan lagi.');
+            window.previewPhoto = function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                if (!/^image\//i.test(file.type)) {
+                    alert(T('File harus berupa gambar.', 'The file must be an image.'));
+                    window.removePhoto();
                     return;
                 }
-            } catch (e) {}
-
-            if (!uploadedPhotoBase64) {
-                alert('⚠️ Mohon pilih dan unggah foto bukti sesi terlebih dahulu.');
-                return;
-            }
-
-            const btn = document.getElementById('submitBtn');
-            btn.textContent = '⏳ Mengirim Data...';
-            btn.disabled = true;
-
-            const payload = {
-                nama: document.getElementById('resName').value.trim(),
-                email: document.getElementById('resEmail').value.trim(),
-                whatsapp: document.getElementById('resWa').value.trim(),
-                cabang: document.getElementById('resBranch').value,
-                tanggal_foto: document.getElementById('resDate').value,
-                jam_foto: document.getElementById('resTime').value,
-                foto: uploadedPhotoBase64,
-                filename: uploadedPhotoName,
-                tindak_lanjut: 'Belum'
+                if (file.size > MAX_PHOTO_BYTES) {
+                    alert(T('Ukuran foto maksimal 15 MB.', 'Photo size must be 15 MB or less.'));
+                    window.removePhoto();
+                    return;
+                }
+                uploadedPhotoName = file.name;
+                uploadedPhotoBase64 = '';
+                photoBusy = true;
+                const reader = new FileReader();
+                reader.onerror = function () { photoBusy = false; alert(T('Gagal membaca foto, silakan pilih ulang.', 'Could not read the photo, please choose it again.')); };
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        const canvas = document.createElement('canvas');
+                        const maxDim = 1000;
+                        let w = img.width, h = img.height;
+                        if (w > maxDim || h > maxDim) {
+                            if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                            else { w = Math.round((w * maxDim) / h); h = maxDim; }
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, w, h);
+                        ctx.drawImage(img, 0, 0, w, h);
+                        uploadedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.75);
+                        photoBusy = false;
+                        showPreview(uploadedPhotoBase64);
+                    };
+                    img.onerror = function () {
+                        uploadedPhotoBase64 = e.target.result;
+                        photoBusy = false;
+                        showPreview(uploadedPhotoBase64);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
             };
 
-            try {
-                const res = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
-                });
+            window.removePhoto = function () {
+                uploadedPhotoBase64 = '';
+                uploadedPhotoName = '';
+                photoBusy = false;
+                document.getElementById('resPhoto').value = '';
+                document.getElementById('photoPreview').src = '';
+                document.getElementById('previewBox').style.display = 'none';
+            };
 
-                if (!res.ok) {
-                    throw new Error('Server mengembalikan HTTP ' + res.status);
+            function submitLabel() { return T('Kirim Permintaan', 'Submit Request'); }
+
+            window.submitResend = async function (event) {
+                event.preventDefault();
+                const btn = document.getElementById('submitBtn');
+
+                // jebakan bot: kolom tersembunyi terisi -> pura-pura sukses, tidak dikirim
+                if (document.getElementById('resWebsite').value) {
+                    document.getElementById('resendForm').reset();
+                    removePhoto();
+                    return;
                 }
-
-                let result = null;
-                try { result = await res.json(); } catch (e) {}
-                if (result && result.status === 'error') {
-                    throw new Error(result.message || 'Server menolak permintaan.');
+                const last = Number(OhSnapCloud.store.get('ohsnap_resend_last') || 0);
+                if (Date.now() - last < COOLDOWN_MS) {
+                    alert(T('Mohon tunggu beberapa detik sebelum mengirim lagi.', 'Please wait a few seconds before sending again.'));
+                    return;
                 }
+                const name = document.getElementById('resName').value.trim();
+                const email = document.getElementById('resEmail').value.trim();
+                const wa = document.getElementById('resWa').value.trim();
+                const waDigits = wa.replace(/\D/g, '');
+                if (!name) { alert(T('Nama lengkap wajib diisi.', 'Full name is required.')); return; }
+                if (waDigits.length < 8 || waDigits.length > 15) {
+                    alert(T('Nomor WhatsApp tidak valid. Contoh: 0812xxxxxxxx', 'Invalid WhatsApp number. Example: 0812xxxxxxxx'));
+                    return;
+                }
+                if (photoBusy) { alert(T('Foto masih diproses, tunggu sebentar lalu kirim lagi.', 'The photo is still being processed, please wait a moment and try again.')); return; }
+                if (!uploadedPhotoBase64) { alert(T('Silakan pilih foto / bukti sesi terlebih dahulu.', 'Please choose a photo / proof of session first.')); return; }
 
-                try { sessionStorage.setItem('ohsnap_last_resend_ts', String(Date.now())); } catch (e) {}
-                alert('✅ Permintaan resend softcopy berhasil dikirim!\n\nPengiriman softfile akan dilakukan dalam kurun waktu 7x24 jam. Jikalau lebih dari waktu yang sudah ditentukan harap menghubungi admin kami di kolom kontak.');
-                
-                document.getElementById('resendForm').reset();
-                removePhoto();
-            } catch (err) {
-                console.error(err);
-                alert('⚠️ Gagal mengirim permintaan (' + (err.message || 'Kendala jaringan') + '). Silakan coba lagi.');
-            } finally {
-                btn.textContent = currentLang === 'en' ? 'Submit Request' : 'Kirim Permintaan';
-                btn.disabled = false;
-            }
-        }
+                btn.textContent = T('⏳ Mengirim Data...', '⏳ Sending...');
+                btn.disabled = true;
 
-        function applyCMS() {
-            if (!cms) return;
-            if (cms.colors) {
-                document.documentElement.style.setProperty('--primary', cms.colors.primary || '#ff1493');
-                document.documentElement.style.setProperty('--secondary', cms.colors.secondary || '#2b4c7e');
-                document.documentElement.style.setProperty('--bg-main', cms.colors.bg || '#fff0f5');
-                document.documentElement.style.setProperty('--footer-bg', cms.colors.footer || '#18171d');
-            }
-            if (Array.isArray(cms.locations) && cms.locations.length > 0) {
+                const payload = {
+                    nama: name,
+                    email: email,
+                    whatsapp: wa,
+                    cabang: document.getElementById('resBranch').value,
+                    tanggal_foto: document.getElementById('resDate').value,
+                    jam_foto: document.getElementById('resTime').value,
+                    foto: uploadedPhotoBase64,
+                    filename: uploadedPhotoName,
+                    tindak_lanjut: 'Belum'
+                };
+
+                try {
+                    const result = await OhSnapCloud.postScript(SCRIPT_URL, payload);
+                    if (result.ok === false) {
+                        alert(T('⚠️ Terjadi kendala saat mengirim data. Data Anda masih tersimpan di form, silakan coba lagi.', '⚠️ A problem occurred while sending. Your data is still in the form, please try again.'));
+                    } else {
+                        OhSnapCloud.store.set('ohsnap_resend_last', String(Date.now()));
+                        alert(T('✅ Permintaan resend softcopy berhasil dikirim!\n\nPengiriman softfile akan dilakukan dalam kurun waktu 7x24 jam. Jikalau lebih dari waktu yang sudah ditentukan harap menghubungi admin kami di kolom kontak.',
+                                '✅ Your softcopy resend request has been sent!\n\nThe softfile will be delivered within 7x24 hours. If it takes longer than that, please contact our admin via the contact page.'));
+                        document.getElementById('resendForm').reset();
+                        removePhoto();
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert(T('⚠️ Terjadi kendala koneksi saat mengirim data. Silakan coba lagi.', '⚠️ A connection problem occurred. Please try again.'));
+                } finally {
+                    btn.textContent = submitLabel();
+                    btn.disabled = false;
+                }
+            };
+
+            function render(cms, lang) {
+                if (!cms || !Array.isArray(cms.locations) || cms.locations.length === 0) return;
                 const branchSelect = document.getElementById('resBranch');
                 const currentVal = branchSelect.value;
                 branchSelect.innerHTML = cms.locations.map(l => {
-                    const label = `${l.name || 'Cabang'}${l.floor ? ' ' + l.floor.replace(/^Lantai\s+/i, 'Lt.') : ''}`;
-                    return `<option value="${escHtml(label)}">${escHtml(label)}</option>`;
+                    const label = (l.name || 'Cabang') + (l.floor ? ' ' + String(l.floor).replace(/^Lantai\s+/i, 'Lt.') : '');
+                    return '<option value="' + esc(label) + '">' + esc(label) + '</option>';
                 }).join('');
-                if (currentVal && Array.from(branchSelect.options).some(o => o.value === currentVal)) {
-                    branchSelect.value = currentVal;
-                }
+                if (currentVal && Array.from(branchSelect.options).some(o => o.value === currentVal)) branchSelect.value = currentVal;
             }
-            if (cms.footer) {
-                document.getElementById('fBrand').textContent = cms.footer.brand;
-                document.getElementById('fBranches').textContent = cms.footer.branches;
-                const ig = document.getElementById('fIg'); if(ig) { ig.textContent = cms.footer.igName; ig.href = OhSnapCloud.safeUrl(cms.footer.igUrl, '#'); }
-                const tt = document.getElementById('fTt'); if(tt) { tt.textContent = cms.footer.ttName; tt.href = OhSnapCloud.safeUrl(cms.footer.ttUrl, '#'); }
 
-                document.getElementById('fCardTitle').textContent = currentLang === 'en' ? (cms.footer.cardTitleEn || 'Find nearby OH SNAP! Studio') : (cms.footer.cardTitleId || 'Find nearby OH SNAP! Studio');
-                document.getElementById('fCardDesc').textContent = currentLang === 'en' ? (cms.footer.cardDescEn || 'Find the nearest booth and studio in your city to capture your special moments today!') : (cms.footer.cardDescId || 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!');
-                document.getElementById('fCopy').textContent = cms.footer.copyright;
-            }
-            try { lastRenderedSignature = JSON.stringify(cms) + '_' + currentLang; } catch (e) {}
-        }
-
-        function setLanguage(lang) {
-            currentLang = lang;
-            try { localStorage.setItem('siteLang', lang); } catch (e) {}
-            document.getElementById('btnEN').classList.toggle('active', lang === 'en');
-            document.getElementById('btnID').classList.toggle('active', lang === 'id');
-            document.querySelectorAll('[data-en]').forEach(el => { el.innerHTML = el.getAttribute('data-' + lang); });
-            applyCMS();
-        }
-
-        // Render sinkron instan (0ms) tanpa kedipan
-        setLanguage(currentLang);
-
-        async function syncLatestCMS() {
-            try {
-                const cloudCms = await OhSnapCloud.pullIfNewer();
-                if (cloudCms && JSON.stringify(cloudCms) + '_' + currentLang !== lastRenderedSignature) {
-                    cms = cloudCms;
-                    applyCMS();
-                }
-            } catch (e) {}
-        }
-
-        window.addEventListener('storage', () => { syncLatestCMS(); });
-        window.addEventListener('focus', () => { syncLatestCMS(); });
-        syncLatestCMS();
+            page = OhSnapCloud.util.createPage(render);
+        })();
     </script>
 </body>
 </html>

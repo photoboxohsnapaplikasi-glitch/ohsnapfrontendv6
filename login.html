@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Admin - OH SNAP! Photobox</title>
-    <meta name="description" content="Login Admin Dashboard OH SNAP! Photobox.">
-    <meta property="og:title" content="Login Admin - OH SNAP! Photobox">
-    <meta property="og:description" content="Login Admin Dashboard OH SNAP! Photobox.">
-    <meta property="og:type" content="website">
-    <link rel="icon" type="image/jpeg" href="images/logo-icon.jpg">
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="icon" href="images/logo-icon.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -77,15 +74,15 @@
         <img src="images/logo-icon.jpg" alt="Logo" class="logo-badge" onerror="this.style.display='none'">
         <h1>ADMIN <span>OH SNAP!</span></h1>
         <p class="sub">Silakan masuk untuk mengelola website</p>
-        <div id="errorBox" class="error-msg">Username atau Password salah!</div>
+        <div id="errorBox" class="error-msg" role="alert">Email atau Password salah!</div>
         <form id="loginForm">
             <div class="form-group">
-                <label>Username</label>
-                <input type="text" id="username" required autocomplete="off">
+                <label for="username">Email</label>
+                <input type="text" id="username" required autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false">
             </div>
             <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="password" required>
+                <label for="password">Password</label>
+                <input type="password" id="password" required autocomplete="current-password">
             </div>
             <button type="submit" class="btn-login" id="btnLoginSubmit">Masuk ke Dashboard</button>
         </form>
@@ -94,53 +91,59 @@
 
     <script src="cms-cloud.js"></script>
     <script>
-        // Hanguskan sesi lama setiap kali halaman login dibuka
-        OhSnapCloud.logoutAdminSession();
-        localStorage.removeItem('ohsnap_admin_logged');
-        sessionStorage.removeItem('ohsnap_admin_logged');
-        sessionStorage.removeItem('ohsnap_admin_token');
-        sessionStorage.removeItem('ohsnap_resend_key');
-        sessionStorage.removeItem('ohsnap_admin_active');
-        sessionStorage.removeItem('ohsnap_login_ticket');
-
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const u = document.getElementById('username').value.trim();
-            const p = document.getElementById('password').value.trim();
+        (function () {
+            const A = OhSnapCloud.auth;
             const errorBox = document.getElementById('errorBox');
             const btn = document.getElementById('btnLoginSubmit');
-            errorBox.style.display = 'none';
-            btn.textContent = 'Memeriksa Akun...';
-            btn.disabled = true;
+            let fails = 0, lockUntil = 0;
 
-            try {
-                const authRes = await OhSnapCloud.loginAdmin(u, p);
-                btn.textContent = 'Masuk ke Dashboard';
-                btn.disabled = false;
+            // Hanguskan sesi lama setiap kali halaman login dibuka
+            A.signOut();
+            OhSnapCloud.store.del('ohsnap_admin_logged');
+            OhSnapCloud.sstore.del('ohsnap_admin_logged');
+            OhSnapCloud.sstore.del('ohsnap_admin_active');
+            OhSnapCloud.sstore.del('ohsnap_login_ticket');
 
-                if (authRes && authRes.ok && authRes.token) {
-                    sessionStorage.setItem('ohsnap_admin_token', authRes.token);
-                    if (authRes.resendKey) {
-                        sessionStorage.setItem('ohsnap_resend_key', authRes.resendKey);
-                    }
-                    sessionStorage.setItem('ohsnap_admin_logged', JSON.stringify(authRes.user || { username: u }));
-                    sessionStorage.setItem('ohsnap_login_ticket', String(Date.now()));
-                    window.location.replace('admin.html');
-                } else {
-                    errorBox.textContent = (authRes && authRes.error) ? authRes.error : 'Username atau Password salah!';
-                    errorBox.style.display = 'block';
-                    document.getElementById('password').value = '';
-                }
-            } catch (err) {
-                btn.textContent = 'Masuk ke Dashboard';
-                btn.disabled = false;
-                const hint = (err && err.status === 404)
-                    ? 'Fungsi keamanan login belum aktif. Jalankan supabase-setup.sql terbaru di SQL Editor Supabase.'
-                    : 'Gagal menghubungi server Cloud (' + (err.message || 'Cek koneksi') + ').';
-                errorBox.textContent = hint;
+            function showError(msg) {
+                errorBox.textContent = msg;
                 errorBox.style.display = 'block';
             }
-        });
+
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const u = document.getElementById('username').value.trim();
+                const p = document.getElementById('password').value;
+                errorBox.style.display = 'none';
+
+                const wait = Math.ceil((lockUntil - Date.now()) / 1000);
+                if (wait > 0) { showError('Terlalu banyak percobaan. Coba lagi dalam ' + wait + ' detik.'); return; }
+
+                btn.textContent = 'Memeriksa Akun...';
+                btn.disabled = true;
+                try {
+                    await A.signIn(u, p);
+                    window.location.replace('admin.html');
+                    return;
+                } catch (err) {
+                    fails++;
+                    if (fails >= 5) { lockUntil = Date.now() + 30000; fails = 0; }
+                    if (err && (err.status === 400 || err.status === 401 || err.status === 422)) {
+                        showError('Email atau Password salah!');
+                    } else if (err && err.status === 429) {
+                        showError('Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.');
+                    } else if (err && err.name === 'AbortError') {
+                        showError('Server tidak merespons. Periksa koneksi internet lalu coba lagi.');
+                    } else if (err && err.status) {
+                        showError('Login gagal (' + err.status + '). Hubungi pengelola website.');
+                    } else {
+                        showError('Tidak dapat terhubung ke server. Periksa koneksi internet lalu coba lagi.');
+                    }
+                    document.getElementById('password').value = '';
+                }
+                btn.textContent = 'Masuk ke Dashboard';
+                btn.disabled = false;
+            });
+        })();
     </script>
 </body>
 </html>
