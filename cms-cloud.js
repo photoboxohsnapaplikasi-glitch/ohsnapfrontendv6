@@ -1,7 +1,7 @@
 /* OH SNAP! - Klien Cloud Bersama (Supabase 1GB Storage & Global Sync Ready) */
 (function () {
-  const SUPABASE_URL = 'https://kbkayevpbeijuuufnrgt.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_AG1wxrYq1moobWYJjC6htQ_TB-Siffl';
+  const SUPABASE_URL = 'https://wiatbabvafjktwrdirys.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_miaUyHiO1kYUCyu7FxvGYg_RslVJWPx';
   const TABLE = 'cms_settings';
   const BUCKET = 'ohsnap-media';
   const BASE_HEADERS = {
