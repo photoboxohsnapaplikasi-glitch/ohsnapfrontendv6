@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin - OH SNAP! Photobox</title>
+    <meta name="description" content="Dashboard Admin OH SNAP! Photobox.">
+    <meta property="og:title" content="Dashboard Admin - OH SNAP! Photobox">
+    <meta property="og:description" content="Dashboard Admin OH SNAP! Photobox.">
+    <meta property="og:type" content="website">
+    <link rel="icon" type="image/jpeg" href="images/logo-icon.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -89,7 +94,7 @@
         }
         .btn-clear-input:hover { background: #dc2626; color: #fff; }
 
-        .dynamic-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; margin-top: 15px; }
+        .dynamic-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 18px; margin-top: 15px; }
         .item-card { background: #fdf2f8; border: 1px solid #fbcfe8; border-radius: 12px; padding: 16px; position: relative; }
         .item-card h4 { margin-bottom: 10px; color: var(--primary); font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; font-weight: 700; }
         
@@ -145,21 +150,24 @@
 
             const hasTicket = sessionStorage.getItem('ohsnap_login_ticket');
             const loggedUser = sessionStorage.getItem('ohsnap_admin_logged');
+            const hasToken = sessionStorage.getItem('ohsnap_admin_token');
             const isActiveTab = sessionStorage.getItem('ohsnap_admin_active') === '1';
 
             const navEntries = (window.performance && performance.getEntriesByType) ? performance.getEntriesByType('navigation') : [];
             const navType = (navEntries && navEntries[0]) ? navEntries[0].type : ((window.performance && performance.navigation && performance.navigation.type === 1) ? 'reload' : 'navigate');
 
-            if (hasTicket && loggedUser) {
+            if (hasTicket && loggedUser && hasToken) {
                 // Masuk sah setelah klik tombol login di login.html
                 sessionStorage.removeItem('ohsnap_login_ticket');
                 sessionStorage.setItem('ohsnap_admin_active', '1');
-            } else if (navType === 'reload' && isActiveTab && loggedUser) {
+            } else if (navType === 'reload' && isActiveTab && loggedUser && hasToken) {
                 // Admin me-refresh (F5 / tombol muat ulang) halaman dashboard yang sedang aktif
                 sessionStorage.setItem('ohsnap_admin_active', '1');
             } else {
                 // Akses ketik URL manual di kolom browser / buka tab baru -> langsung lempar ke login.html
                 sessionStorage.removeItem('ohsnap_admin_logged');
+                sessionStorage.removeItem('ohsnap_admin_token');
+                sessionStorage.removeItem('ohsnap_resend_key');
                 sessionStorage.removeItem('ohsnap_admin_active');
                 sessionStorage.removeItem('ohsnap_login_ticket');
                 document.documentElement.style.display = 'none';
@@ -202,7 +210,7 @@
     <main class="main-content">
         <div class="top-bar">
             <h1 id="pageTitle">Pengaturan Banner & Hero Title</h1>
-            <button class="btn-save-all" onclick="saveAllCMS()">💾 Simpan Semua Perubahan</button>
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center;"><span id="syncStatusBadge" style="font-size:0.78rem; font-weight:700; padding:5px 12px; border-radius:50px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;">☁️ Memuat Cloud...</span><button class="btn-save-all" onclick="saveAllCMS()">💾 Simpan Semua Perubahan</button></div>
         </div>
 
         <!-- 1. BANNER & HERO TITLE -->
@@ -463,8 +471,6 @@
         })();
 
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyum2HVg2InZDhEyeata3I2hTbPUQzzqyKHsEtgA9Z3vRCF2CeTjwzGTCHd4tszlOMm/exec';
-        const SUPABASE_URL = 'https://kbkayevpbeijuuufnrgt.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_AG1wxrYq1moobWYJjC6htQ_TB-Siffl';
 
         // Helper agar tanda kutip ganda (") di dalam input tidak memotong teks HTML
         function escAttr(str) {
@@ -548,14 +554,8 @@
 
         async function uploadImageToCloud(file) {
             const compressedDataUrl = await compressImageFile(file, 1280, 0.82);
-            try {
-                const blob = dataURLToBlob(compressedDataUrl);
-                return await OhSnapCloud.upload(blob, 'img', 'jpg');
-            } catch (e) {
-                console.warn('Upload gambar ke Storage gagal, memakai fallback terkompresi:', e);
-                showToast('⚠️ Bucket ohsnap-media belum aktif di SQL, memakai penyimpanan cadangan');
-                return await compressImageFile(file, 800, 0.7);
-            }
+            const blob = dataURLToBlob(compressedDataUrl);
+            return await OhSnapCloud.upload(blob, 'img', 'jpg');
         }
 
         function compressImageFile(file, maxDim = 450, quality = 0.5) {
@@ -609,7 +609,7 @@
                     subId: 'OH SNAP! Photobox hadir dari semangat untuk mengabadikan setiap momen hangat, spontan, dan tak terlupakan bersama orang-orang tersayang. Berawal dari konsep photobox tematik yang unik dan kreatif, kini kami hadir di berbagai pusat perbelanjaan (Mall).', 
                     subEn: 'OH SNAP! Photobox was born from the spirit of capturing warm, spontaneous, and unforgettable moments with your favorite people...', 
                     btnId: 'Read more →', btnEn: 'Read more →',
-                    fullId: 'OH SNAP! Photobox was born from the spirit of capturing warm, spontaneous, and unforgettable moments with your favorite people. Starting with thematic booths designed creatively, we now serve various malls across Indonesia.\n\nWith studio-grade lighting, high-resolution cameras, instant prints, and digital softcopies, OH SNAP! continues to innovate with thematic concepts like Train Booth, Hotel Booth, Elevator Booth, and many more.\n\nWe are committed to always providing the best service, cheerful atmosphere, and modern technology so that every visit to OH SNAP! leaves a sweet memory that lasts forever.',
+                    fullId: 'OH SNAP! Photobox hadir dari semangat untuk mengabadikan setiap momen hangat, spontan, dan tak terlupakan bersama orang-orang tersayang. Berawal dari konsep photobox tematik yang unik dan kreatif, kini kami hadir di berbagai pusat perbelanjaan (Mall) di Indonesia.\n\nDengan pencahayaan setara studio, kamera resolusi tinggi, hasil cetak instan, serta softcopy digital, OH SNAP! terus berinovasi menghadirkan konsep bilik tematik seperti Train Booth, Hotel Booth, Elevator Booth, dan banyak lagi.\n\nKami berkomitmen memberikan pelayanan terbaik, suasana yang ceria, serta teknologi modern agar setiap kunjungan ke OH SNAP! meninggalkan kenangan manis yang tak terlupakan.',
                     fullEn: 'OH SNAP! Photobox was born from the spirit of capturing warm, spontaneous, and unforgettable moments with your favorite people. Starting with thematic booths designed creatively, we now serve various malls across Indonesia.\n\nWith studio-grade lighting, high-resolution cameras, instant prints, and digital softcopies, OH SNAP! continues to innovate with thematic concepts like Train Booth, Hotel Booth, Elevator Booth, and many more.\n\nWe are committed to always providing the best service, cheerful atmosphere, and modern technology so that every visit to OH SNAP! leaves a sweet memory that lasts forever.',
                     imgUrl: '' 
                 },
@@ -681,10 +681,7 @@
                 cardDescEn: 'Find the nearest booth and studio in your city to capture your special moments today!',
                 copyright: '© 2026 OH SNAP! Photobox. All rights reserved.' 
             },
-            admins: [
-                { id: 1, name: 'Super Admin', username: 'admin', pass: 'ohsnap' }
-            ],
-            resendOverrides: {}
+            admins: []
         };
 
         function sanitizeVideosList(videos) {
@@ -721,10 +718,7 @@
             if (Array.isArray(parsed.locations) && parsed.locations.length > 0) merged.locations = parsed.locations;
             
             if (parsed.footer) Object.assign(merged.footer, parsed.footer);
-            if (Array.isArray(parsed.admins) && parsed.admins.length > 0) merged.admins = parsed.admins;
-            if (parsed.resendOverrides && typeof parsed.resendOverrides === 'object') {
-                merged.resendOverrides = parsed.resendOverrides;
-            }
+
             return merged;
         }
 
@@ -739,22 +733,61 @@
         }
 
         let cmsData = loadSavedCMS();
+        let serverAdminList = [];
         let activeBannerPageKey = sessionStorage.getItem('activeBannerPage') || 'home';
         let autoCloudSyncTimer = null;
+        let isCloudReady = false;
+        let lastKnownCloudTime = 0;
+
+        function setSyncBadge(state, text) {
+            const el = document.getElementById('syncStatusBadge');
+            if (!el) return;
+            el.textContent = text;
+            if (state === 'ok') {
+                el.style.background = '#f0fdf4'; el.style.color = '#16a34a'; el.style.borderColor = '#bbf7d0';
+            } else if (state === 'wait') {
+                el.style.background = '#fefce8'; el.style.color = '#ca8a04'; el.style.borderColor = '#fde047';
+            } else {
+                el.style.background = '#fef2f2'; el.style.color = '#dc2626'; el.style.borderColor = '#fecaca';
+            }
+        }
+
+        function isUrlStillUsed(url) {
+            if (!url) return false;
+            return JSON.stringify(cmsData).includes(url);
+        }
+
+        async function safeRemoveOldFile(oldUrl) {
+            if (!oldUrl || !OhSnapCloud.removeFile) return;
+            if (isUrlStillUsed(oldUrl)) return;
+            await OhSnapCloud.removeFile(oldUrl);
+        }
 
         function persistData() {
             cmsData.lastUpdated = Date.now();
             saveCMSBackupToIDB(cmsData);
             try {
-                localStorage.setItem('ohsnap_cms_data', JSON.stringify(cmsData));
+                localStorage.setItem('ohsnap_cms_data', JSON.stringify(OhSnapCloud.stripSensitiveForPublic(cmsData)));
             } catch (e) {}
+            if (!isCloudReady) {
+                setSyncBadge('err', '⚠️ Offline (Auto-Save Ditahan)');
+                return;
+            }
+            setSyncBadge('wait', '⏳ Menyimpan ke Cloud...');
             if (autoCloudSyncTimer) clearTimeout(autoCloudSyncTimer);
             autoCloudSyncTimer = setTimeout(async () => {
                 try {
-                    const saved = await OhSnapCloud.save(cleanDataForCloud(cmsData));
-                    if (saved && saved.lastUpdated) cmsData.lastUpdated = saved.lastUpdated;
+                    const saved = await OhSnapCloud.save(cleanDataForCloud(cmsData), lastKnownCloudTime);
+                    if (saved && saved.lastUpdated) {
+                        cmsData.lastUpdated = saved.lastUpdated;
+                        lastKnownCloudTime = saved.lastUpdated;
+                    }
                     markSynced(cmsData);
-                } catch (e) {}
+                    setSyncBadge('ok', '☁️ Tersimpan di Cloud');
+                } catch (e) {
+                    console.warn('Auto-save cloud tertunda:', e);
+                    setSyncBadge('err', '⚠️ Gagal Sinkron (Klik Simpan)');
+                }
             }, 600);
         }
 
@@ -800,12 +833,12 @@
                 const quickEl = document.getElementById('aboutQuickImgUrl');
                 if (quickEl) quickEl.value = '';
             }
-            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
             document.getElementById('bannerImgUrl').value = '';
             const fileEl = document.getElementById('bannerFileInput');
             if (fileEl) fileEl.value = '';
             renderBannerPreview();
-            await autoSyncAfterUpload('🗑️ Gambar banner dikosongkan');
+            const synced = await autoSyncAfterUpload('🗑️ Gambar banner dikosongkan');
+            if (synced) await safeRemoveOldFile(oldUrl);
         }
 
         async function clearAboutImg() {
@@ -813,7 +846,6 @@
             const oldUrl = cmsData.banners.about.imgUrl;
             cmsData.banners.about.imgUrl = '';
             if (cmsData.banners.home) cmsData.banners.home.aboutImgUrl = '';
-            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
             document.getElementById('aboutQuickImgUrl').value = '';
             const fileEl = document.getElementById('aboutQuickFileInput');
             if (fileEl) fileEl.value = '';
@@ -821,7 +853,8 @@
                 document.getElementById('bannerImgUrl').value = '';
             }
             renderBannerPreview();
-            await autoSyncAfterUpload('🗑️ Foto About Story dikosongkan');
+            const synced = await autoSyncAfterUpload('🗑️ Foto About Story dikosongkan');
+            if (synced) await safeRemoveOldFile(oldUrl);
         }
 
         function updateBannerImgManual(val) {
@@ -873,9 +906,9 @@
         async function clearArrayImg(arr, idx, prop) {
             const oldUrl = cmsData[arr][idx][prop];
             cmsData[arr][idx][prop] = '';
-            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
             initAllRenders();
-            await autoSyncAfterUpload('🗑️ Media dikosongkan');
+            const synced = await autoSyncAfterUpload('🗑️ Media dikosongkan');
+            if (synced) await safeRemoveOldFile(oldUrl);
         }
 
         function togglePasswordVisibility(inputId, btnEl) {
@@ -897,16 +930,26 @@
             updateBannerState();
             updateTitlesState();
             updateFooterState();
+            if (autoCloudSyncTimer) clearTimeout(autoCloudSyncTimer);
             cmsData.lastUpdated = Date.now();
-            persistData();
+            saveCMSBackupToIDB(cmsData);
             try {
-                const saved = await OhSnapCloud.save(cleanDataForCloud(cmsData));
-                if (saved && saved.lastUpdated) cmsData.lastUpdated = saved.lastUpdated;
+                setSyncBadge('wait', '⏳ Menyimpan ke Cloud...');
+                const saved = await OhSnapCloud.save(cleanDataForCloud(cmsData), lastKnownCloudTime);
+                if (saved && saved.lastUpdated) {
+                    cmsData.lastUpdated = saved.lastUpdated;
+                    lastKnownCloudTime = saved.lastUpdated;
+                }
+                isCloudReady = true;
                 markSynced(cmsData);
+                setSyncBadge('ok', '☁️ Tersimpan di Cloud');
                 showToast(successMsg + ' & tersinkron ke Cloud!');
+                return true;
             } catch (e) {
                 console.error('Auto-sync gagal:', e);
+                setSyncBadge('err', '⚠️ Gagal Sinkron (Klik Simpan)');
                 showToast(successMsg + ' (klik Simpan Semua Perubahan untuk sinkron ulang)');
+                return false;
             }
         }
 
@@ -923,11 +966,11 @@
                 if (page === 'about' && cmsData.banners.home) {
                     cmsData.banners.home.aboutImgUrl = publicUrl;
                 }
-                if (oldUrl && oldUrl !== publicUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
                 document.getElementById('bannerImgUrl').value = publicUrl.startsWith('data:') ? '' : publicUrl;
                 inputEl.value = '';
                 renderBannerPreview();
-                await autoSyncAfterUpload('✅ Gambar Banner berhasil diupload');
+                const synced = await autoSyncAfterUpload('✅ Gambar Banner berhasil diupload');
+                if (synced && oldUrl && oldUrl !== publicUrl) await safeRemoveOldFile(oldUrl);
             } catch (err) {
                 showToast('❌ Gagal memuat file gambar');
             }
@@ -944,14 +987,14 @@
                 const publicUrl = await uploadImageToCloud(file);
                 cmsData.banners.about.imgUrl = publicUrl;
                 cmsData.banners.home.aboutImgUrl = publicUrl;
-                if (oldUrl && oldUrl !== publicUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
                 document.getElementById('aboutQuickImgUrl').value = publicUrl.startsWith('data:') ? '' : publicUrl;
                 if (document.getElementById('bannerPageSelect').value === 'about') {
                     document.getElementById('bannerImgUrl').value = publicUrl.startsWith('data:') ? '' : publicUrl;
                 }
                 inputEl.value = '';
                 renderBannerPreview();
-                await autoSyncAfterUpload('✅ Foto About Story berhasil diupload');
+                const synced = await autoSyncAfterUpload('✅ Foto About Story berhasil diupload');
+                if (synced && oldUrl && oldUrl !== publicUrl) await safeRemoveOldFile(oldUrl);
             } catch (err) {
                 showToast('❌ Gagal memuat Foto About Story');
             }
@@ -965,10 +1008,10 @@
                 const oldUrl = cmsData[arrName][index][propName];
                 const publicUrl = await uploadImageToCloud(file);
                 cmsData[arrName][index][propName] = publicUrl;
-                if (oldUrl && oldUrl !== publicUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
                 inputEl.value = '';
                 initAllRenders();
-                await autoSyncAfterUpload('✅ Foto berhasil diupload');
+                const synced = await autoSyncAfterUpload('✅ Foto berhasil diupload');
+                if (synced && oldUrl && oldUrl !== publicUrl) await safeRemoveOldFile(oldUrl);
             } catch (err) {
                 showToast('❌ Gagal memuat file foto');
             }
@@ -989,24 +1032,14 @@
                 const publicUrl = await OhSnapCloud.upload(file, 'video', ext);
                 cmsData[arrName][index][propName] = publicUrl;
                 cmsData[arrName][index].fileName = file.name;
-                if (oldUrl && oldUrl !== publicUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
                 inputEl.value = '';
                 initAllRenders();
-                await autoSyncAfterUpload('✅ Video berhasil diupload');
+                const synced = await autoSyncAfterUpload('✅ Video berhasil diupload');
+                if (synced && oldUrl && oldUrl !== publicUrl) await safeRemoveOldFile(oldUrl);
             } catch (cloudErr) {
                 console.warn('Upload video ke cloud gagal:', cloudErr);
-                try {
-                    const idbKey = `video_slot_${index}_${Date.now()}`;
-                    await saveVideoBufferToIDB(idbKey, file);
-                    cmsData[arrName][index][propName] = `idb://${idbKey}`;
-                    cmsData[arrName][index].fileName = file.name;
-                    inputEl.value = '';
-                    persistData();
-                    initAllRenders();
-                    showToast('⚠️ Video disimpan lokal (pastikan SQL Bucket ohsnap-media sudah dijalankan)');
-                } catch (err) {
-                    showToast('❌ Gagal menyimpan video MP4');
-                }
+                inputEl.value = '';
+                showToast('❌ Gagal mengunggah video ke Cloud Storage (' + (cloudErr.message || 'Cek koneksi/SQL') + ')');
             }
         }
 
@@ -1202,10 +1235,10 @@
         async function removeVideo(i) {
             if (cmsData.videos.length <= 5) return alert('Batas minimal Video Feed adalah 5!');
             const oldUrl = cmsData.videos[i] && cmsData.videos[i].url;
-            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
             cmsData.videos.splice(i, 1);
             renderVideos();
-            await autoSyncAfterUpload('🗑️ Video dihapus');
+            const synced = await autoSyncAfterUpload('🗑️ Video dihapus');
+            if (synced && oldUrl) await safeRemoveOldFile(oldUrl);
         }
         function moveVideo(index, dir) { const t = index + dir; if(t<0||t>=cmsData.videos.length)return; const tmp=cmsData.videos[index]; cmsData.videos[index]=cmsData.videos[t]; cmsData.videos[t]=tmp; persistData(); renderVideos(); }
 
@@ -1229,10 +1262,10 @@
         async function removeStudio(i) {
             if (cmsData.studios.length <= 4) return alert('Batas minimal Suasana Studio adalah 4!');
             const oldUrl = cmsData.studios[i] && cmsData.studios[i].img;
-            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
             cmsData.studios.splice(i, 1);
             renderStudios();
-            await autoSyncAfterUpload('🗑️ Studio dihapus');
+            const synced = await autoSyncAfterUpload('🗑️ Studio dihapus');
+            if (synced && oldUrl) await safeRemoveOldFile(oldUrl);
         }
         function moveStudio(index, dir) { const t = index + dir; if(t<0||t>=cmsData.studios.length)return; const tmp=cmsData.studios[index]; cmsData.studios[index]=cmsData.studios[t]; cmsData.studios[t]=tmp; persistData(); renderStudios(); }
 
@@ -1257,10 +1290,10 @@
         async function removePromo(i) {
             if (cmsData.promos.length <= 3) return alert('Batas minimal Kelola Promo adalah 3!');
             const oldUrl = cmsData.promos[i] && cmsData.promos[i].img;
-            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
             cmsData.promos.splice(i, 1);
             renderPromos();
-            await autoSyncAfterUpload('🗑️ Promo dihapus');
+            const synced = await autoSyncAfterUpload('🗑️ Promo dihapus');
+            if (synced && oldUrl) await safeRemoveOldFile(oldUrl);
         }
         function movePromo(index, dir) { const t = index + dir; if(t<0||t>=cmsData.promos.length)return; const tmp=cmsData.promos[index]; cmsData.promos[index]=cmsData.promos[t]; cmsData.promos[t]=tmp; persistData(); renderPromos(); }
 
@@ -1297,10 +1330,10 @@
         async function removeFrame(i) {
             if (cmsData.frames.length <= 5) return alert('Batas minimal Frame Layout adalah 5!');
             const oldUrl = cmsData.frames[i] && cmsData.frames[i].img;
-            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
             cmsData.frames.splice(i, 1);
             renderFrames();
-            await autoSyncAfterUpload('🗑️ Frame dihapus');
+            const synced = await autoSyncAfterUpload('🗑️ Frame dihapus');
+            if (synced && oldUrl) await safeRemoveOldFile(oldUrl);
         }
         function moveFrame(index, dir) { const t = index + dir; if(t<0||t>=cmsData.frames.length)return; const tmp=cmsData.frames[index]; cmsData.frames[index]=cmsData.frames[t]; cmsData.frames[t]=tmp; persistData(); renderFrames(); }
 
@@ -1337,10 +1370,10 @@
         async function removeSrv(i) {
             if (cmsData.services.length <= 3) return alert('Batas minimal Layanan adalah 3!');
             const oldUrl = cmsData.services[i] && cmsData.services[i].img;
-            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
             cmsData.services.splice(i, 1);
             renderServices();
-            await autoSyncAfterUpload('🗑️ Layanan dihapus');
+            const synced = await autoSyncAfterUpload('🗑️ Layanan dihapus');
+            if (synced && oldUrl) await safeRemoveOldFile(oldUrl);
         }
         function moveService(index, dir) { const t = index + dir; if(t<0||t>=cmsData.services.length)return; const tmp=cmsData.services[index]; cmsData.services[index]=cmsData.services[t]; cmsData.services[t]=tmp; persistData(); renderServices(); }
 
@@ -1366,10 +1399,10 @@
         async function removeLoc(i) {
             if (cmsData.locations.length <= 5) return alert('Batas minimal Lokasi Cabang adalah 5!');
             const oldUrl = cmsData.locations[i] && cmsData.locations[i].img;
-            if (oldUrl && OhSnapCloud.removeFile) await OhSnapCloud.removeFile(oldUrl);
             cmsData.locations.splice(i, 1);
             renderLocations();
-            await autoSyncAfterUpload('🗑️ Lokasi cabang dihapus');
+            const synced = await autoSyncAfterUpload('🗑️ Lokasi cabang dihapus');
+            if (synced && oldUrl) await safeRemoveOldFile(oldUrl);
         }
         function moveLocation(index, dir) { const t = index + dir; if(t<0||t>=cmsData.locations.length)return; const tmp=cmsData.locations[index]; cmsData.locations[index]=cmsData.locations[t]; cmsData.locations[t]=tmp; persistData(); renderLocations(); }
 
@@ -1414,14 +1447,17 @@
         }
 
         function syncColor(type, val) {
-            if (!val.startsWith('#')) return;
-            if (val.length === 7) { const p = document.getElementById('picker' + type); if (p) p.value = val; }
-            const h = document.getElementById('hex' + type); if (h) h.value = val;
+            const h = document.getElementById('hex' + type);
+            if (h && h.value !== val) h.value = val;
+            if (!/^#[0-9A-Fa-f]{6}$/.test(val)) return;
+            const p = document.getElementById('picker' + type);
+            if (p) p.value = val;
+            const isValidHex = (v, fb) => /^#[0-9A-Fa-f]{6}$/.test(v) ? v : fb;
             cmsData.colors = {
-                primary: document.getElementById('hexPrimary').value,
-                secondary: document.getElementById('hexSecondary').value,
-                bg: document.getElementById('hexBg').value,
-                footer: document.getElementById('hexFooter').value
+                primary: isValidHex(document.getElementById('hexPrimary').value, defaultCMS.colors.primary),
+                secondary: isValidHex(document.getElementById('hexSecondary').value, defaultCMS.colors.secondary),
+                bg: isValidHex(document.getElementById('hexBg').value, defaultCMS.colors.bg),
+                footer: isValidHex(document.getElementById('hexFooter').value, defaultCMS.colors.footer)
             };
             persistData();
         }
@@ -1435,36 +1471,35 @@
         // 10. RESEND SOFTCOPY (TERHUBUNG LANGSUNG KE GOOGLE SPREADSHEET)
         // ==========================================
         let resendList = [];
-        let resendLocalOverrides = {};
 
-        async function saveResendOverrides() {
-            cmsData.resendOverrides = {};
-            localStorage.removeItem('ohsnap_resend_overrides');
+        function getResendAdminKey() {
+            try { return sessionStorage.getItem('ohsnap_resend_key') || 'ohsnap_resend_sec_2026'; } catch (e) { return 'ohsnap_resend_sec_2026'; }
         }
 
         async function loadResendData() {
             showToast('🔄 Mengambil data dari Spreadsheet...');
-            localStorage.removeItem('ohsnap_resend_overrides');
-            if (cmsData && cmsData.resendOverrides) {
-                cmsData.resendOverrides = {};
-            }
+            try { localStorage.removeItem('ohsnap_resend_overrides'); } catch (e) {}
             try {
-                const res = await fetch(SCRIPT_URL + '?t=' + Date.now());
+                const url = `${SCRIPT_URL}?adminKey=${encodeURIComponent(getResendAdminKey())}&t=${Date.now()}`;
+                const res = await fetch(url, { cache: 'no-store' });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
                 const data = await res.json();
                 if (data && Array.isArray(data)) {
                     resendList = data.map((item, idx) => {
-                        item._sheetRow = item._sheetRow || (item.id !== undefined ? Number(item.id) + 1 : idx + 4);
+                        item._sheetRow = Number(item._sheetRow) || (item.id !== undefined ? Number(item.id) + 1 : idx + 4);
                         return item;
                     });
+                    renderResendTable();
+                    showToast('✅ Data Spreadsheet berhasil diperbarui!');
                 } else {
                     resendList = [];
+                    renderResendTable();
                 }
             } catch(e) {
                 console.error('Gagal mengambil data Spreadsheet:', e);
-                resendList = [];
+                renderResendTable();
+                showToast('⚠️ Gagal mengambil data Spreadsheet');
             }
-            renderResendTable();
-            showToast('✅ Data berhasil diperbarui!');
         }
 
         function parseColumnValue(val) {
@@ -1510,37 +1545,25 @@
                 const isSudah = (String(r.tindak_lanjut || r.aksi || '').toLowerCase() === 'sudah');
                 const cleanPhone = String(r.whatsapp || r.no_hp || r.hp || '').replace(/\D/g, '');
                 const formattedPhone = cleanPhone.startsWith('0') ? '62' + cleanPhone.slice(1) : cleanPhone;
-                const linkFoto = r.link_foto || r.foto || r.upload_foto || r.link || '#';
+                const linkFoto = OhSnapCloud.safeUrl(r.link_foto || r.foto || r.upload_foto || r.link || '#', '#');
                 const customerEmail = r.email || r.mail || '';
                 const namaCust = r.nama || r.name || 'Pelanggan';
                 const cabangCust = r.cabang || r.branch || '-';
                  
-                let rawTglMasuk = r.tanggal_masuk || r.tanggal || Object.values(r)[1] || '';
+                let rawTglMasuk = r.tanggal_masuk || r.tanggal || '';
                 let parsedIn = parseColumnValue(rawTglMasuk);
 
-                let rawTglFoto = r.tanggal_foto || Object.values(r)[2] || '';
+                let rawTglFoto = r.tanggal_foto || '';
                 let parsedFotoDate = parseColumnValue(rawTglFoto);
                 let finalTglFoto = parsedFotoDate.date !== '-' ? parsedFotoDate.date : (rawTglFoto || '-');
 
                 let finalJamFoto = '-';
-                let rawJamFoto = r.jam_foto || r.jam || Object.values(r)[3] || '';
-                 
+                let rawJamFoto = r.jam_foto || r.jam || '';
                 if (rawJamFoto !== null && rawJamFoto !== undefined && String(rawJamFoto).trim() !== '') {
                     let strJam = String(rawJamFoto).trim();
-                    if (strJam.includes('GMT') || strJam.includes('UTC')) {
-                        let d = new Date(strJam);
-                        if (!isNaN(d.getTime())) {
-                            d.setTime(d.getTime() - (25 * 60 * 1000 + 20 * 1000));
-                            let hh = String(d.getHours()).padStart(2, '0');
-                            let mm = String(d.getMinutes()).padStart(2, '0');
-                            let ss = String(d.getSeconds()).padStart(2, '0');
-                            finalJamFoto = `${hh}:${mm}:${ss}`;
-                        } else {
-                            finalJamFoto = strJam.slice(11, 19);
-                        }
-                    } else if (strJam.includes(':')) {
-                        let parts = strJam.split(/[\sT]+/);
-                        finalJamFoto = parts.length > 1 ? parts[1].slice(0, 8) : parts[0].slice(0, 8);
+                    const timeMatch = strJam.match(/(\d{1,2}:\d{2}(?::\d{2})?)/);
+                    if (timeMatch) {
+                        finalJamFoto = timeMatch[1];
                     } else {
                         finalJamFoto = strJam.slice(0, 8);
                     }
@@ -1593,6 +1616,7 @@
 
             const payload = {
                 action: 'updateStatus',
+                adminKey: getResendAdminKey(),
                 status: next,
                 sheetRow: r._sheetRow || '',
                 nama: r.nama || r.name || '',
@@ -1601,15 +1625,19 @@
             };
 
             try {
-                await fetch(SCRIPT_URL, {
+                const res = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const out = await res.json();
+                if (out && out.status === 'error') throw new Error(out.message);
                 showToast('✅ Status berhasil diubah menjadi ' + next + ' di Spreadsheet!');
             } catch (e) {
-                showToast('⚠️ Gagal menghubungi Spreadsheet');
+                r.tindak_lanjut = curr;
+                renderResendTable();
+                showToast('⚠️ Gagal memperbarui status di Spreadsheet');
             }
         }
 
@@ -1618,12 +1646,14 @@
             if (!r) return;
             if (!confirm(`Hapus permanen data "${r.nama || 'Pelanggan'}" dari Dashboard & Google Spreadsheet?`)) return;
 
+            const backupRow = resendList[idx];
             resendList.splice(idx, 1);
             renderResendTable();
             showToast('⏳ Menghapus data dari Google Spreadsheet...');
 
             const payload = {
                 action: 'delete',
+                adminKey: getResendAdminKey(),
                 sheetRow: r._sheetRow || '',
                 nama: r.nama || r.name || '',
                 no_hp: r.whatsapp || r.no_hp || r.hp || '',
@@ -1631,15 +1661,19 @@
             };
 
             try {
-                await fetch(SCRIPT_URL, {
+                const res = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const out = await res.json();
+                if (out && out.status === 'error') throw new Error(out.message);
                 showToast('🗑️ Data berhasil dihapus permanen dari Spreadsheet!');
-                setTimeout(() => loadResendData(), 1500);
+                setTimeout(() => loadResendData(), 1200);
             } catch (e) {
+                resendList.splice(idx, 0, backupRow);
+                renderResendTable();
                 showToast('⚠️ Gagal menghapus data di Spreadsheet');
             }
         }
@@ -1648,20 +1682,32 @@
             const tb = document.getElementById('adminTableBody');
             if (!tb) return;
             tb.innerHTML = '';
-            if (!cmsData.admins || cmsData.admins.length === 0) {
-                tb.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999; padding:15px;">Belum ada akun admin.</td></tr>`;
+            if (!serverAdminList || serverAdminList.length === 0) {
+                tb.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999; padding:15px;">Memuat daftar akun admin dari server...</td></tr>`;
                 return;
             }
-            cmsData.admins.forEach((a, i) => {
+            serverAdminList.forEach((a, i) => {
                 tb.innerHTML += `
                     <tr>
                         <td>${i + 1}</td>
                         <td>${escAttr(a.name || a.nama || 'Admin')}</td>
                         <td>${escAttr(a.username || '-')}</td>
-                        <td>${escAttr(a.pass || '-')}</td>
-                        <td><button class="btn-remove" onclick="deleteAdmin(${i})">Hapus</button></td>
+                        <td>•••••••• (Bcrypt Server)</td>
+                        <td><button class="btn-remove" onclick="deleteAdmin(${Number(a.id)})">Hapus</button></td>
                     </tr>`;
             });
+        }
+
+        async function refreshServerAdmins() {
+            try {
+                const list = await OhSnapCloud.listAdmins();
+                if (Array.isArray(list)) {
+                    serverAdminList = list;
+                    renderAdminTable();
+                }
+            } catch (e) {
+                console.warn('Gagal mengambil daftar admin:', e);
+            }
         }
 
         async function addNewAdmin() {
@@ -1674,32 +1720,31 @@
                 return;
             }
 
-            if (!cmsData.admins) cmsData.admins = [];
-             
-            const exist = cmsData.admins.some(a => String(a.username).trim().toLowerCase() === user.toLowerCase());
-            if (exist) {
-                alert('Username tersebut sudah terdaftar. Silakan gunakan username lain.');
-                return;
+            try {
+                const updatedList = await OhSnapCloud.addAdmin(name, user, pass);
+                if (Array.isArray(updatedList)) serverAdminList = updatedList;
+                clearNewAdminInputs();
+                renderAdminTable();
+                showToast('✅ Akun admin baru berhasil dienkripsi & disimpan di Server!');
+            } catch (err) {
+                alert('⚠️ Gagal menambah admin: ' + (err.message || err));
             }
-
-            cmsData.admins.push({ id: Date.now(), name: name, username: user, pass: pass });
-            clearNewAdminInputs();
-
-            renderAdminTable();
-            await saveAllCMS();
-            showToast('✅ Akun admin baru berhasil ditambahkan & disinkronkan ke Cloud!');
         }
 
-        async function deleteAdmin(idx) {
-            if (cmsData.admins.length <= 1) {
+        async function deleteAdmin(adminId) {
+            if (serverAdminList.length <= 1) {
                 alert('Minimal harus tersisa 1 akun admin aktif!');
                 return;
             }
-            if (confirm('Apakah Anda yakin ingin menghapus akun admin ini?')) {
-                cmsData.admins.splice(idx, 1);
-                renderAdminTable();
-                await saveAllCMS();
-                showToast('🗑️ Akun admin berhasil dihapus & disinkronkan ke Cloud!');
+            if (confirm('Apakah Anda yakin ingin menghapus akun admin ini secara permanen?')) {
+                try {
+                    const updatedList = await OhSnapCloud.deleteAdmin(adminId);
+                    if (Array.isArray(updatedList)) serverAdminList = updatedList;
+                    renderAdminTable();
+                    showToast('🗑️ Akun admin berhasil dihapus dari Server!');
+                } catch (err) {
+                    alert('⚠️ Gagal menghapus admin: ' + (err.message || err));
+                }
             }
         }
 
@@ -1707,22 +1752,33 @@
             updateBannerState();
             updateTitlesState();
             updateFooterState();
+            if (autoCloudSyncTimer) clearTimeout(autoCloudSyncTimer);
             cmsData.lastUpdated = Date.now();
-            persistData();
-            
+            saveCMSBackupToIDB(cmsData);
+            setSyncBadge('wait', '⏳ Menyimpan ke Cloud...');
+
             try {
                 const cleanPayload = cleanDataForCloud(cmsData);
-                const savedCloud = await OhSnapCloud.save(cleanPayload);
+                const savedCloud = await OhSnapCloud.save(cleanPayload, isCloudReady ? lastKnownCloudTime : 0);
                 if (savedCloud && savedCloud.lastUpdated) {
                     cmsData.lastUpdated = savedCloud.lastUpdated;
+                    lastKnownCloudTime = savedCloud.lastUpdated;
                 }
+                isCloudReady = true;
                 markSynced(cmsData);
+                setSyncBadge('ok', '☁️ Tersimpan di Cloud');
                 showToast('✅ Berhasil disimpan & disinkronkan ke semua perangkat secara global!');
             } catch (err) {
                 console.error('Detail Error Simpan Cloud:', err);
-                if (err && err.status) {
-                    const hint = (err.status === 401 || err.status === 403) ? ' - cek RLS/policy & API key' :
-                                 (err.status === 404) ? ' - tabel cms_settings belum dibuat' : '';
+                setSyncBadge('err', '⚠️ Gagal Sinkron');
+                if (err && err.code === 'CONFLICT') {
+                    showToast('⚠️ ' + err.message);
+                } else if (err && err.status === 401) {
+                    alert('Sesi login Anda telah berakhir. Silakan login kembali.');
+                    logoutAdmin();
+                } else if (err && err.status) {
+                    const hint = (err.status === 403) ? ' - cek RLS/policy & jalankan supabase-setup.sql' :
+                                 (err.status === 404) ? ' - jalankan supabase-setup.sql terbaru di Supabase' : '';
                     showToast('⚠️ Server menolak (' + err.status + ')' + hint);
                 } else {
                     showToast('⚠️ Tidak bisa menjangkau server cloud (jaringan/DNS/diblokir/project Supabase pause)');
@@ -1741,7 +1797,7 @@
                 saveCMSBackupToIDB(obj);
                 localStorage.setItem('ohsnap_cloud_snapshot', comparableCMS(obj));
                 localStorage.setItem('ohsnap_cloud_synced_at', String(obj.lastUpdated || Date.now()));
-                localStorage.setItem('ohsnap_cms_data', JSON.stringify(obj));
+                localStorage.setItem('ohsnap_cms_data', JSON.stringify(OhSnapCloud.stripSensitiveForPublic(obj)));
             } catch (e) {}
         }
 
@@ -1755,6 +1811,8 @@
         function logoutAdmin() { 
             localStorage.removeItem('ohsnap_admin_logged'); 
             sessionStorage.removeItem('ohsnap_admin_logged');
+                sessionStorage.removeItem('ohsnap_admin_token');
+                sessionStorage.removeItem('ohsnap_resend_key');
             sessionStorage.removeItem('ohsnap_admin_active');
             sessionStorage.removeItem('ohsnap_login_ticket');
             window.location.replace('login.html'); 
@@ -1792,22 +1850,31 @@
                 if (remote && Object.keys(remote).length > 0) {
                     cmsData = mergeWithDefault(remote);
                     cmsData.lastUpdated = Number(remote.lastUpdated || Date.now());
+                    lastKnownCloudTime = cmsData.lastUpdated;
+                    isCloudReady = true;
                     saveCMSBackupToIDB(cmsData);
                     markSynced(cmsData);
                     initAllRenders();
                     clearNewAdminInputs();
+                    setSyncBadge('ok', '☁️ Tersimpan di Cloud');
                     showToast('☁️ Terhubung ke Cloud & data terbaru berhasil disinkronkan!');
                 } else {
                     const initialPayload = cleanDataForCloud(cmsData);
-                    await OhSnapCloud.save(initialPayload);
+                    const savedInit = await OhSnapCloud.save(initialPayload, 0);
+                    lastKnownCloudTime = Number((savedInit && savedInit.lastUpdated) || Date.now());
+                    isCloudReady = true;
                     markSynced(cmsData);
+                    setSyncBadge('ok', '☁️ Tersimpan di Cloud');
                     showToast('☁️ Cloud siap! Data awal berhasil disinkronkan ke Supabase.');
                 }
             } catch (e) {
                 console.warn('Gagal menarik data cloud:', e);
-                showToast('⚠️ Tidak bisa menjangkau cloud - memakai data lokal browser ini');
+                isCloudReady = false;
+                setSyncBadge('err', '⚠️ Offline (Auto-Save Ditahan)');
+                showToast('⚠️ Tidak bisa menjangkau cloud - auto-save ditahan agar tidak menimpa data Cloud');
             }
 
+            refreshServerAdmins();
             loadResendData();
         });
     </script>

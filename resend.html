@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resend Softcopy - OH SNAP! Photobox</title>
+    <meta name="description" content="Permintaan Resend Softcopy Foto OH SNAP! Photobox.">
+    <meta property="og:title" content="Resend Softcopy - OH SNAP! Photobox">
+    <meta property="og:description" content="Permintaan Resend Softcopy Foto OH SNAP! Photobox.">
+    <meta property="og:type" content="website">
+    <link rel="icon" type="image/jpeg" href="images/logo-icon.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
         (function() {
@@ -26,7 +31,7 @@
         header { display: flex; justify-content: space-between; align-items: center; height: 85px; padding: 0 4%; background: var(--primary); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
         .logo-container { display: flex; align-items: center; gap: 12px; text-decoration: none; z-index: 1001; }
         .brand-logo-img { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; border: 2px solid #fff; }
-        .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: 2px; color: #fff; }
+        .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: 2px; color: #fff; white-space: nowrap; transition: color 0.25s; }
         .logo span { color: #ffe4e6; }
         .nav-container { display: flex; align-items: center; gap: 25px; }
         .nav-menu { display: flex; align-items: center; gap: 24px; }
@@ -41,7 +46,7 @@
         .form-section { max-width: 700px; margin: 50px auto; padding: 0 5%; }
         .resend-card { background: #fff; border: 1px solid #fbcfe8; border-radius: 24px; padding: 40px; box-shadow: 0 10px 30px rgba(255,182,193,0.2); }
         .resend-card h2 { font-size: 1.8rem; font-weight: 800; color: var(--secondary); margin-bottom: 8px; text-align: center; }
-        .resend-card p.subtitle { text-align: center; color: #6b7280; font-size: 0.95rem; margin-bottom: 30px; }
+        .resend-card p.subtitle { text-align: center; color: #9ca3af; font-size: 0.95rem; margin-bottom: 30px; }
 
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 0.9rem; font-weight: 700; color: var(--secondary); margin-bottom: 8px; }
@@ -76,7 +81,7 @@
         .footer-location-card h4 { color: #fff; font-size: 1.25rem; margin-bottom: 12px; }
         .footer-location-card p { color: #9ca3af; font-size: 0.95rem; margin-bottom: 22px; }
         .location-btn-action { background: var(--primary); color: #fff; padding: 12px 28px; border-radius: 50px; font-weight: 700; }
-        .footer-bottom { max-width: 1300px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 0.85rem; color: #6b7280; }
+        .footer-bottom { max-width: 1300px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 0.85rem; color: #9ca3af; }
 
         @media screen and (max-width: 768px) {
             .menu-toggle { display: flex; }
@@ -90,6 +95,20 @@
             .resend-card { padding: 25px; }
             .footer-content { grid-template-columns: 1fr; }
         }
+    
+        @media screen and (max-width: 1024px) {
+            .menu-toggle { display: flex; width: 40px; height: 40px; padding: 9px 6px; align-items: center; justify-content: space-between; }
+            .nav-container { position: fixed; top: 0; left: -100%; width: 260px; height: 100vh; background: #fff; flex-direction: column; align-items: flex-start; padding: 90px 25px; transition: left 0.3s ease, visibility 0.3s; z-index: 999; box-shadow: 10px 0 30px rgba(0,0,0,0.1); visibility: hidden; }
+            .nav-container.active { left: 0; visibility: visible; }
+            .nav-menu { flex-direction: column; width: 100%; }
+            .nav-menu a { color: var(--secondary); padding: 14px 0; border-bottom: 1px solid #f3f4f6; width: 100%; }
+            .lang-switcher { width: 100%; justify-content: center; background: #fdf2f8; border: 1px solid #fbcfe8; padding: 6px; }
+            .lang-btn { color: var(--secondary); width: 50%; text-align: center; }
+            .lang-btn.active { background: var(--primary); color: #ffffff; }
+            body.menu-open .logo { color: var(--secondary); }
+            body.menu-open .logo span { color: var(--primary); }
+            body.menu-open .brand-logo-img { border-color: var(--primary); }
+        }
     </style>
 </head>
 <body>
@@ -98,7 +117,7 @@
             <img src="images/logo-icon.jpg" alt="OH SNAP! Logo" class="brand-logo-img" onerror="this.style.display='none'">
             <span class="logo">OH SNAP<span>!</span></span>
         </a>
-        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        <button class="menu-toggle" id="menuToggle" aria-label="Buka Menu Navigasi" aria-expanded="false"><span></span><span></span><span></span></button>
         <div class="nav-container" id="navContainer">
             <nav class="nav-menu">
                 <a href="index.html" data-en="Home" data-id="Halaman">Halaman</a>
@@ -196,7 +215,8 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyum2HVg2InZDhEyeata3I2hTbPUQzzqyKHsEtgA9Z3vRCF2CeTjwzGTCHd4tszlOMm/exec';
 
-        let currentLang = localStorage.getItem('siteLang') || 'id';
+        let currentLang = 'id';
+        try { currentLang = localStorage.getItem('siteLang') || 'id'; } catch (e) {}
         let cms = null;
         try { cms = JSON.parse(localStorage.getItem('ohsnap_cms_data')); } catch (e) {}
         let lastRenderedSignature = '';
@@ -206,9 +226,24 @@
             return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
-        document.getElementById('menuToggle').addEventListener('click', () => {
-            document.getElementById('navContainer').classList.toggle('active');
-        });
+        (function() {
+            const btn = document.getElementById('menuToggle');
+            const nav = document.getElementById('navContainer');
+            if (!btn || !nav) return;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = nav.classList.toggle('active');
+                document.body.classList.toggle('menu-open', isOpen);
+                btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+            document.addEventListener('click', (e) => {
+                if (nav.classList.contains('active') && !nav.contains(e.target) && !btn.contains(e.target)) {
+                    nav.classList.remove('active');
+                    document.body.classList.remove('menu-open');
+                    btn.setAttribute('aria-expanded', 'false');
+                }
+            });
+        })();
 
         let uploadedPhotoBase64 = '';
         let uploadedPhotoName = '';
@@ -257,14 +292,28 @@
 
         async function submitResend(event) {
             event.preventDefault();
+            try {
+                const lastSent = Number(sessionStorage.getItem('ohsnap_last_resend_ts') || 0);
+                if (Date.now() - lastSent < 30000) {
+                    const sisa = Math.ceil((30000 - (Date.now() - lastSent)) / 1000);
+                    alert('⏳ Mohon tunggu ' + sisa + ' detik sebelum mengirim permintaan lagi.');
+                    return;
+                }
+            } catch (e) {}
+
+            if (!uploadedPhotoBase64) {
+                alert('⚠️ Mohon pilih dan unggah foto bukti sesi terlebih dahulu.');
+                return;
+            }
+
             const btn = document.getElementById('submitBtn');
             btn.textContent = '⏳ Mengirim Data...';
             btn.disabled = true;
 
             const payload = {
-                nama: document.getElementById('resName').value,
-                email: document.getElementById('resEmail').value,
-                whatsapp: document.getElementById('resWa').value,
+                nama: document.getElementById('resName').value.trim(),
+                email: document.getElementById('resEmail').value.trim(),
+                whatsapp: document.getElementById('resWa').value.trim(),
                 cabang: document.getElementById('resBranch').value,
                 tanggal_foto: document.getElementById('resDate').value,
                 jam_foto: document.getElementById('resTime').value,
@@ -274,20 +323,30 @@
             };
 
             try {
-                await fetch(SCRIPT_URL, {
+                const res = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
 
+                if (!res.ok) {
+                    throw new Error('Server mengembalikan HTTP ' + res.status);
+                }
+
+                let result = null;
+                try { result = await res.json(); } catch (e) {}
+                if (result && result.status === 'error') {
+                    throw new Error(result.message || 'Server menolak permintaan.');
+                }
+
+                try { sessionStorage.setItem('ohsnap_last_resend_ts', String(Date.now())); } catch (e) {}
                 alert('✅ Permintaan resend softcopy berhasil dikirim!\n\nPengiriman softfile akan dilakukan dalam kurun waktu 7x24 jam. Jikalau lebih dari waktu yang sudah ditentukan harap menghubungi admin kami di kolom kontak.');
                 
                 document.getElementById('resendForm').reset();
                 removePhoto();
             } catch (err) {
                 console.error(err);
-                alert('⚠️ Terjadi kendala koneksi saat mengirim data. Silakan coba lagi.');
+                alert('⚠️ Gagal mengirim permintaan (' + (err.message || 'Kendala jaringan') + '). Silakan coba lagi.');
             } finally {
                 btn.textContent = currentLang === 'en' ? 'Submit Request' : 'Kirim Permintaan';
                 btn.disabled = false;
@@ -316,8 +375,8 @@
             if (cms.footer) {
                 document.getElementById('fBrand').textContent = cms.footer.brand;
                 document.getElementById('fBranches').textContent = cms.footer.branches;
-                const ig = document.getElementById('fIg'); if(ig) { ig.textContent = cms.footer.igName; ig.href = cms.footer.igUrl || '#'; }
-                const tt = document.getElementById('fTt'); if(tt) { tt.textContent = cms.footer.ttName; tt.href = cms.footer.ttUrl || '#'; }
+                const ig = document.getElementById('fIg'); if(ig) { ig.textContent = cms.footer.igName; ig.href = OhSnapCloud.safeUrl(cms.footer.igUrl, '#'); }
+                const tt = document.getElementById('fTt'); if(tt) { tt.textContent = cms.footer.ttName; tt.href = OhSnapCloud.safeUrl(cms.footer.ttUrl, '#'); }
 
                 document.getElementById('fCardTitle').textContent = currentLang === 'en' ? (cms.footer.cardTitleEn || 'Find nearby OH SNAP! Studio') : (cms.footer.cardTitleId || 'Find nearby OH SNAP! Studio');
                 document.getElementById('fCardDesc').textContent = currentLang === 'en' ? (cms.footer.cardDescEn || 'Find the nearest booth and studio in your city to capture your special moments today!') : (cms.footer.cardDescId || 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!');
@@ -328,7 +387,7 @@
 
         function setLanguage(lang) {
             currentLang = lang;
-            localStorage.setItem('siteLang', lang);
+            try { localStorage.setItem('siteLang', lang); } catch (e) {}
             document.getElementById('btnEN').classList.toggle('active', lang === 'en');
             document.getElementById('btnID').classList.toggle('active', lang === 'id');
             document.querySelectorAll('[data-en]').forEach(el => { el.innerHTML = el.getAttribute('data-' + lang); });

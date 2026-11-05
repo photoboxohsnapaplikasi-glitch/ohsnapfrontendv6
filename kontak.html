@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kontak - OH SNAP! Photobox</title>
+    <meta name="description" content="Hubungi Layanan Pelanggan OH SNAP! Photobox melalui Instagram, TikTok, atau Email.">
+    <meta property="og:title" content="Kontak - OH SNAP! Photobox">
+    <meta property="og:description" content="Hubungi Layanan Pelanggan OH SNAP! Photobox melalui Instagram, TikTok, atau Email.">
+    <meta property="og:type" content="website">
+    <link rel="icon" type="image/jpeg" href="images/logo-icon.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
         (function() {
@@ -26,7 +31,7 @@
         header { display: flex; justify-content: space-between; align-items: center; height: 85px; padding: 0 4%; background: var(--primary); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); }
         .logo-container { display: flex; align-items: center; gap: 12px; text-decoration: none; z-index: 1001; }
         .brand-logo-img { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; border: 2px solid #ffffff; }
-        .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: 2px; color: #ffffff; }
+        .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: 2px; color: #ffffff; white-space: nowrap; transition: color 0.25s; }
         .logo span { color: #ffe4e6; }
         .nav-container { display: flex; align-items: center; gap: 25px; }
         .nav-menu { display: flex; align-items: center; gap: 24px; }
@@ -64,7 +69,7 @@
         .footer-location-card h4 { color: #ffffff; font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; }
         .footer-location-card p { color: #9ca3af; font-size: 0.95rem; margin-bottom: 22px; }
         .location-btn-action { background: var(--primary); color: #ffffff; padding: 12px 28px; border-radius: 50px; font-weight: 700; font-size: 0.95rem; }
-        .footer-bottom { max-width: 1300px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.08); text-align: center; font-size: 0.85rem; color: #6b7280; }
+        .footer-bottom { max-width: 1300px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.08); text-align: center; font-size: 0.85rem; color: #9ca3af; }
 
         @media screen and (max-width: 768px) {
             .menu-toggle { display: flex; }
@@ -82,6 +87,20 @@
             .section-title { font-size: 1.9rem; }
             .footer-content { grid-template-columns: 1fr; }
         }
+    
+        @media screen and (max-width: 1024px) {
+            .menu-toggle { display: flex; width: 40px; height: 40px; padding: 9px 6px; align-items: center; justify-content: space-between; }
+            .nav-container { position: fixed; top: 0; left: -100%; width: 260px; height: 100vh; background: #fff; flex-direction: column; align-items: flex-start; padding: 90px 25px; transition: left 0.3s ease, visibility 0.3s; z-index: 999; box-shadow: 10px 0 30px rgba(0,0,0,0.1); visibility: hidden; }
+            .nav-container.active { left: 0; visibility: visible; }
+            .nav-menu { flex-direction: column; width: 100%; }
+            .nav-menu a { color: var(--secondary); padding: 14px 0; border-bottom: 1px solid #f3f4f6; width: 100%; }
+            .lang-switcher { width: 100%; justify-content: center; background: #fdf2f8; border: 1px solid #fbcfe8; padding: 6px; }
+            .lang-btn { color: var(--secondary); width: 50%; text-align: center; }
+            .lang-btn.active { background: var(--primary); color: #ffffff; }
+            body.menu-open .logo { color: var(--secondary); }
+            body.menu-open .logo span { color: var(--primary); }
+            body.menu-open .brand-logo-img { border-color: var(--primary); }
+        }
     </style>
 </head>
 <body>
@@ -90,7 +109,7 @@
             <img src="images/logo-icon.jpg" alt="OH SNAP! Logo" class="brand-logo-img" onerror="this.style.display='none'">
             <span class="logo">OH SNAP<span>!</span></span>
         </a>
-        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        <button class="menu-toggle" id="menuToggle" aria-label="Buka Menu Navigasi" aria-expanded="false"><span></span><span></span><span></span></button>
         <div class="nav-container" id="navContainer">
             <nav class="nav-menu">
                 <a href="index.html" data-en="Home" data-id="Halaman">Halaman</a>
@@ -150,7 +169,8 @@
 
     <script src="cms-cloud.js"></script>
     <script>
-        let currentLang = localStorage.getItem('siteLang') || 'id';
+        let currentLang = 'id';
+        try { currentLang = localStorage.getItem('siteLang') || 'id'; } catch (e) {}
         let cms = null;
         try { cms = JSON.parse(localStorage.getItem('ohsnap_cms_data')); } catch (e) {}
         let lastRenderedSignature = '';
@@ -166,9 +186,24 @@
             }
         })();
 
-        const menuToggle = document.getElementById('menuToggle');
-        const navContainer = document.getElementById('navContainer');
-        menuToggle.addEventListener('click', () => { navContainer.classList.toggle('active'); });
+        (function() {
+            const btn = document.getElementById('menuToggle');
+            const nav = document.getElementById('navContainer');
+            if (!btn || !nav) return;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = nav.classList.toggle('active');
+                document.body.classList.toggle('menu-open', isOpen);
+                btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+            document.addEventListener('click', (e) => {
+                if (nav.classList.contains('active') && !nav.contains(e.target) && !btn.contains(e.target)) {
+                    nav.classList.remove('active');
+                    document.body.classList.remove('menu-open');
+                    btn.setAttribute('aria-expanded', 'false');
+                }
+            });
+        })();
 
         function applyCMS() {
             if (!cms) return;
@@ -181,8 +216,8 @@
             if (cms.footer) {
                 document.getElementById('fBrand').textContent = cms.footer.brand;
                 document.getElementById('fBranches').textContent = cms.footer.branches;
-                const ig = document.getElementById('fIg'); if(ig) { ig.textContent = cms.footer.igName; ig.href = cms.footer.igUrl || '#'; }
-                const tt = document.getElementById('fTt'); if(tt) { tt.textContent = cms.footer.ttName; tt.href = cms.footer.ttUrl || '#'; }
+                const ig = document.getElementById('fIg'); if(ig) { ig.textContent = cms.footer.igName; ig.href = OhSnapCloud.safeUrl(cms.footer.igUrl, '#'); }
+                const tt = document.getElementById('fTt'); if(tt) { tt.textContent = cms.footer.ttName; tt.href = OhSnapCloud.safeUrl(cms.footer.ttUrl, '#'); }
 
                 document.getElementById('fCardTitle').textContent = currentLang === 'en' ? (cms.footer.cardTitleEn || 'Find nearby OH SNAP! Studio') : (cms.footer.cardTitleId || 'Find nearby OH SNAP! Studio');
                 document.getElementById('fCardDesc').textContent = currentLang === 'en' ? (cms.footer.cardDescEn || 'Find the nearest booth and studio in your city to capture your special moments today!') : (cms.footer.cardDescId || 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!');
@@ -193,7 +228,7 @@
 
         function setLanguage(lang) {
             currentLang = lang;
-            localStorage.setItem('siteLang', lang);
+            try { localStorage.setItem('siteLang', lang); } catch (e) {}
             document.getElementById('btnEN').classList.toggle('active', lang === 'en');
             document.getElementById('btnID').classList.toggle('active', lang === 'id');
             document.querySelectorAll('[data-en]').forEach(el => {

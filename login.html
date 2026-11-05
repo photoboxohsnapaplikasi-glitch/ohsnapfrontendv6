@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Admin - OH SNAP! Photobox</title>
+    <meta name="description" content="Login Admin Dashboard OH SNAP! Photobox.">
+    <meta property="og:title" content="Login Admin - OH SNAP! Photobox">
+    <meta property="og:description" content="Login Admin Dashboard OH SNAP! Photobox.">
+    <meta property="og:type" content="website">
+    <link rel="icon" type="image/jpeg" href="images/logo-icon.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -90,8 +95,11 @@
     <script src="cms-cloud.js"></script>
     <script>
         // Hanguskan sesi lama setiap kali halaman login dibuka
+        OhSnapCloud.logoutAdminSession();
         localStorage.removeItem('ohsnap_admin_logged');
         sessionStorage.removeItem('ohsnap_admin_logged');
+        sessionStorage.removeItem('ohsnap_admin_token');
+        sessionStorage.removeItem('ohsnap_resend_key');
         sessionStorage.removeItem('ohsnap_admin_active');
         sessionStorage.removeItem('ohsnap_login_ticket');
 
@@ -105,40 +113,32 @@
             btn.textContent = 'Memeriksa Akun...';
             btn.disabled = true;
 
-            // Ambil data akun admin terbaru langsung dari Supabase Cloud
-            let cloudData = null;
             try {
-                cloudData = await OhSnapCloud.load(true);
-                if (cloudData) {
-                    try { localStorage.setItem('ohsnap_cms_data', JSON.stringify(cloudData)); } catch (err) {}
+                const authRes = await OhSnapCloud.loginAdmin(u, p);
+                btn.textContent = 'Masuk ke Dashboard';
+                btn.disabled = false;
+
+                if (authRes && authRes.ok && authRes.token) {
+                    sessionStorage.setItem('ohsnap_admin_token', authRes.token);
+                    if (authRes.resendKey) {
+                        sessionStorage.setItem('ohsnap_resend_key', authRes.resendKey);
+                    }
+                    sessionStorage.setItem('ohsnap_admin_logged', JSON.stringify(authRes.user || { username: u }));
+                    sessionStorage.setItem('ohsnap_login_ticket', String(Date.now()));
+                    window.location.replace('admin.html');
+                } else {
+                    errorBox.textContent = (authRes && authRes.error) ? authRes.error : 'Username atau Password salah!';
+                    errorBox.style.display = 'block';
+                    document.getElementById('password').value = '';
                 }
-            } catch (err) {}
-
-            let storedData = cloudData;
-            if (!storedData) {
-                try { storedData = JSON.parse(localStorage.getItem('ohsnap_cms_data')); } catch (err) {}
-            }
-            
-            let adminList = (storedData && Array.isArray(storedData.admins) && storedData.admins.length > 0) ? storedData.admins : [
-                { id: 1, name: 'Super Admin', username: 'admin', pass: 'ohsnap' }
-            ];
-
-            const found = adminList.find(a => 
-                String(a.username).trim().toLowerCase() === u.toLowerCase() && 
-                String(a.pass || a.password).trim() === p
-            );
-
-            btn.textContent = 'Masuk ke Dashboard';
-            btn.disabled = false;
-
-            if (found) {
-                sessionStorage.setItem('ohsnap_admin_logged', JSON.stringify(found));
-                sessionStorage.setItem('ohsnap_login_ticket', String(Date.now()));
-                window.location.replace('admin.html');
-            } else {
-                errorBox.textContent = 'Username atau Password salah!';
+            } catch (err) {
+                btn.textContent = 'Masuk ke Dashboard';
+                btn.disabled = false;
+                const hint = (err && err.status === 404)
+                    ? 'Fungsi keamanan login belum aktif. Jalankan supabase-setup.sql terbaru di SQL Editor Supabase.'
+                    : 'Gagal menghubungi server Cloud (' + (err.message || 'Cek koneksi') + ').';
+                errorBox.textContent = hint;
                 errorBox.style.display = 'block';
-                document.getElementById('password').value = '';
             }
         });
     </script>

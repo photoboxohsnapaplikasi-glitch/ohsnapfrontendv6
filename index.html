@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OH SNAP! Photobox - Capture Your Fun Moments</title>
+    <meta name="description" content="OH SNAP! Photobox - Photobox & Self-Photo Studio kekinian di berbagai pusat perbelanjaan Indonesia.">
+    <meta property="og:title" content="OH SNAP! Photobox - Capture Your Fun Moments">
+    <meta property="og:description" content="OH SNAP! Photobox - Photobox & Self-Photo Studio kekinian di berbagai pusat perbelanjaan Indonesia.">
+    <meta property="og:type" content="website">
+    <link rel="icon" type="image/jpeg" href="images/logo-icon.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
         (function() {
@@ -38,7 +43,7 @@
         header { display: flex; justify-content: space-between; align-items: center; height: 85px; padding: 0 4%; background: var(--primary); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
         .logo-container { display: flex; align-items: center; gap: 12px; text-decoration: none; z-index: 1001; }
         .brand-logo-img { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; border: 2px solid #fff; }
-        .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: 2px; color: #fff; }
+        .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: 2px; color: #fff; white-space: nowrap; transition: color 0.25s; }
         .logo span { color: #ffe4e6; }
         .nav-container { display: flex; align-items: center; gap: 25px; }
         .nav-menu { display: flex; align-items: center; gap: 24px; }
@@ -108,7 +113,7 @@
         .section-head { text-align: center; margin-bottom: 35px; }
         .section-head h2 { font-size: 2.2rem; font-weight: 800; color: var(--secondary); margin-bottom: 8px; }
         .section-head h2 span { color: var(--primary); }
-        .section-head p { color: #6b7280; font-size: 1rem; }
+        .section-head p { color: #9ca3af; font-size: 1rem; }
 
         /* SISTEM SLIDER / CAROUSEL */
         .slider-wrapper {
@@ -175,7 +180,7 @@
         .footer-location-card h4 { color: #fff; font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; }
         .footer-location-card p { color: #9ca3af; font-size: 0.95rem; margin-bottom: 22px; }
         .location-btn-action { background: var(--primary); color: #fff; padding: 12px 28px; border-radius: 50px; font-weight: 700; font-size: 0.95rem; }
-        .footer-bottom { max-width: 1300px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 0.85rem; color: #6b7280; }
+        .footer-bottom { max-width: 1300px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 0.85rem; color: #9ca3af; }
 
         @media screen and (max-width: 1024px) {
             .slide-item-studio { flex: 0 0 calc((100% - 32px) / 3); }
@@ -200,6 +205,20 @@
             .slider-btn-right { right: -10px; }
             .footer-content { grid-template-columns: 1fr; }
         }
+    
+        @media screen and (max-width: 1024px) {
+            .menu-toggle { display: flex; width: 40px; height: 40px; padding: 9px 6px; align-items: center; justify-content: space-between; }
+            .nav-container { position: fixed; top: 0; left: -100%; width: 260px; height: 100vh; background: #fff; flex-direction: column; align-items: flex-start; padding: 90px 25px; transition: left 0.3s ease, visibility 0.3s; z-index: 999; box-shadow: 10px 0 30px rgba(0,0,0,0.1); visibility: hidden; }
+            .nav-container.active { left: 0; visibility: visible; }
+            .nav-menu { flex-direction: column; width: 100%; }
+            .nav-menu a { color: var(--secondary); padding: 14px 0; border-bottom: 1px solid #f3f4f6; width: 100%; }
+            .lang-switcher { width: 100%; justify-content: center; background: #fdf2f8; border: 1px solid #fbcfe8; padding: 6px; }
+            .lang-btn { color: var(--secondary); width: 50%; text-align: center; }
+            .lang-btn.active { background: var(--primary); color: #ffffff; }
+            body.menu-open .logo { color: var(--secondary); }
+            body.menu-open .logo span { color: var(--primary); }
+            body.menu-open .brand-logo-img { border-color: var(--primary); }
+        }
     </style>
 </head>
 <body>
@@ -208,7 +227,7 @@
             <img src="images/logo-icon.jpg" alt="OH SNAP! Logo" class="brand-logo-img" onerror="this.style.display='none'">
             <span class="logo">OH SNAP<span>!</span></span>
         </a>
-        <button class="menu-toggle" id="menuToggle"><span></span><span></span><span></span></button>
+        <button class="menu-toggle" id="menuToggle" aria-label="Buka Menu Navigasi" aria-expanded="false"><span></span><span></span><span></span></button>
         <div class="nav-container" id="navContainer">
             <nav class="nav-menu">
                 <a href="index.html" class="active" data-en="Home" data-id="Halaman">Halaman</a>
@@ -253,9 +272,9 @@
             <p id="secStudioSub"></p>
         </div>
         <div class="slider-wrapper">
-            <button class="slider-btn slider-btn-left" onclick="scrollSlider('studioGrid', -1)">&#10094;</button>
+            <button class="slider-btn slider-btn-left" aria-label="Geser ke kiri" onclick="scrollSlider('studioGrid', -1)">&#10094;</button>
             <div id="studioGrid" class="slider-container"></div>
-            <button class="slider-btn slider-btn-right" onclick="scrollSlider('studioGrid', 1)">&#10095;</button>
+            <button class="slider-btn slider-btn-right" aria-label="Geser ke kanan" onclick="scrollSlider('studioGrid', 1)">&#10095;</button>
         </div>
     </section>
 
@@ -266,9 +285,9 @@
             <p id="secPromoSub"></p>
         </div>
         <div class="slider-wrapper">
-            <button class="slider-btn slider-btn-left" onclick="scrollSlider('promoGrid', -1)">&#10094;</button>
+            <button class="slider-btn slider-btn-left" aria-label="Geser ke kiri" onclick="scrollSlider('promoGrid', -1)">&#10094;</button>
             <div id="promoGrid" class="slider-container"></div>
-            <button class="slider-btn slider-btn-right" onclick="scrollSlider('promoGrid', 1)">&#10095;</button>
+            <button class="slider-btn slider-btn-right" aria-label="Geser ke kanan" onclick="scrollSlider('promoGrid', 1)">&#10095;</button>
         </div>
     </section>
 
@@ -279,9 +298,9 @@
             <p id="secVideoSub"></p>
         </div>
         <div class="slider-wrapper">
-            <button class="slider-btn slider-btn-left" onclick="scrollSlider('videoGrid', -1)">&#10094;</button>
+            <button class="slider-btn slider-btn-left" aria-label="Geser ke kiri" onclick="scrollSlider('videoGrid', -1)">&#10094;</button>
             <div id="videoGrid" class="slider-container"></div>
-            <button class="slider-btn slider-btn-right" onclick="scrollSlider('videoGrid', 1)">&#10095;</button>
+            <button class="slider-btn slider-btn-right" aria-label="Geser ke kanan" onclick="scrollSlider('videoGrid', 1)">&#10095;</button>
         </div>
     </section>
 
@@ -311,7 +330,8 @@
 
     <script src="cms-cloud.js"></script>
     <script>
-        let currentLang = localStorage.getItem('siteLang') || 'id';
+        let currentLang = 'id';
+        try { currentLang = localStorage.getItem('siteLang') || 'id'; } catch (e) {}
 
         function escHtml(str) {
             if (str === null || str === undefined) return '';
@@ -320,6 +340,8 @@
 
         function getMediaFromIDB(key) {
             return new Promise((resolve) => {
+                try {
+                if (typeof indexedDB === 'undefined') return resolve(null);
                 const req = indexedDB.open('ohsnap_media_db', 2);
                 req.onupgradeneeded = function(e) {
                     const db = e.target.result;
@@ -336,6 +358,7 @@
                     getReq.onerror = () => resolve(null);
                 };
                 req.onerror = () => resolve(null);
+                } catch (e) { resolve(null); }
             });
         }
         
@@ -413,9 +436,24 @@
         let lastPromoSig = '';
         let lastVideoSig = '';
 
-        document.getElementById('menuToggle').addEventListener('click', () => {
-            document.getElementById('navContainer').classList.toggle('active');
-        });
+        (function() {
+            const btn = document.getElementById('menuToggle');
+            const nav = document.getElementById('navContainer');
+            if (!btn || !nav) return;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = nav.classList.toggle('active');
+                document.body.classList.toggle('menu-open', isOpen);
+                btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+            document.addEventListener('click', (e) => {
+                if (nav.classList.contains('active') && !nav.contains(e.target) && !btn.contains(e.target)) {
+                    nav.classList.remove('active');
+                    document.body.classList.remove('menu-open');
+                    btn.setAttribute('aria-expanded', 'false');
+                }
+            });
+        })();
 
         function scrollSlider(elementId, direction) {
             const container = document.getElementById(elementId);
@@ -445,10 +483,10 @@
             if (cms.banners) {
                 if (cms.banners.home) {
                     const b = cms.banners.home;
-                    document.getElementById('heroTitle').innerHTML = currentLang === 'en' ? (b.titleEn || b.titleId || '') : (b.titleId || '');
+                    document.getElementById('heroTitle').innerHTML = OhSnapCloud.safeTitleHtml(currentLang === 'en' ? (b.titleEn || b.titleId || '') : (b.titleId || ''));
                     document.getElementById('heroSub').textContent = currentLang === 'en' ? (b.subEn || b.subId || '') : (b.subId || '');
                     if (b.imgUrl && b.imgUrl.trim() !== '' && b.imgUrl !== 'images/hero-banner.jpg') {
-                        const targetBg = `url("${b.imgUrl}")`;
+                        const targetBg = `url("${OhSnapCloud.safeUrl(b.imgUrl, '')}")`;
                         if (document.getElementById('heroBannerBg').style.backgroundImage !== targetBg) {
                             document.getElementById('heroBannerBg').style.backgroundImage = targetBg;
                         }
@@ -462,7 +500,7 @@
                     const aboutSubEl = document.getElementById('aboutSub');
                     const aboutBtnEl = document.getElementById('aboutBtn');
                     if (aboutTitleEl && (ab.titleId || ab.titleEn)) {
-                        aboutTitleEl.innerHTML = currentLang === 'en' ? (ab.titleEn || ab.titleId) : ab.titleId;
+                        aboutTitleEl.innerHTML = OhSnapCloud.safeTitleHtml(currentLang === 'en' ? (ab.titleEn || ab.titleId) : ab.titleId);
                     }
                     if (aboutSubEl && (ab.subId || ab.subEn)) {
                         aboutSubEl.textContent = currentLang === 'en' ? (ab.subEn || ab.subId) : ab.subId;
@@ -481,7 +519,7 @@
                     }
                     if (aboutSrc) {
                         if (aboutImgEl.getAttribute('src') !== aboutSrc) {
-                            aboutImgEl.src = aboutSrc;
+                            aboutImgEl.src = OhSnapCloud.safeUrl(aboutSrc, '');
                         }
                         aboutImgEl.style.display = 'block';
                         aboutImgEl.style.opacity = '1';
@@ -493,11 +531,11 @@
 
             const t = Object.assign({}, defaultCMS.titles, (cms && cms.titles) ? cms.titles : {});
             const isEn = currentLang === 'en';
-            document.getElementById('secPromoTitle').innerHTML = isEn ? (t.titlePromoEn || t.titlePromoId || defaultCMS.titles.titlePromoEn) : (t.titlePromoId || defaultCMS.titles.titlePromoId);
+            document.getElementById('secPromoTitle').innerHTML = OhSnapCloud.safeTitleHtml(isEn ? (t.titlePromoEn || t.titlePromoId || defaultCMS.titles.titlePromoEn) : (t.titlePromoId || defaultCMS.titles.titlePromoId));
             document.getElementById('secPromoSub').textContent = isEn ? (t.subPromoEn || t.subPromoId || defaultCMS.titles.subPromoEn) : (t.subPromoId || defaultCMS.titles.subPromoId);
-            document.getElementById('secStudioTitle').innerHTML = isEn ? (t.titleStudioEn || t.titleStudioId || defaultCMS.titles.titleStudioEn) : (t.titleStudioId || defaultCMS.titles.titleStudioId);
+            document.getElementById('secStudioTitle').innerHTML = OhSnapCloud.safeTitleHtml(isEn ? (t.titleStudioEn || t.titleStudioId || defaultCMS.titles.titleStudioEn) : (t.titleStudioId || defaultCMS.titles.titleStudioId));
             document.getElementById('secStudioSub').textContent = isEn ? (t.subStudioEn || t.subStudioId || defaultCMS.titles.subStudioEn) : (t.subStudioId || defaultCMS.titles.subStudioId);
-            document.getElementById('secVideoTitle').innerHTML = isEn ? (t.titleVideoEn || t.titleVideoId || defaultCMS.titles.titleVideoEn) : (t.titleVideoId || defaultCMS.titles.titleVideoId);
+            document.getElementById('secVideoTitle').innerHTML = OhSnapCloud.safeTitleHtml(isEn ? (t.titleVideoEn || t.titleVideoId || defaultCMS.titles.titleVideoEn) : (t.titleVideoId || defaultCMS.titles.titleVideoId));
             document.getElementById('secVideoSub').textContent = isEn ? (t.subVideoEn || t.subVideoId || defaultCMS.titles.subVideoEn) : (t.subVideoId || defaultCMS.titles.subVideoId);
 
             // Render Studios (hanya jika data studio berubah agar gambar tidak berkedip)
@@ -592,8 +630,8 @@
             if (cms && cms.footer) {
                 document.getElementById('fBrand').textContent = cms.footer.brand;
                 document.getElementById('fBranches').textContent = cms.footer.branches;
-                const ig = document.getElementById('fIg'); if(ig) { ig.textContent = cms.footer.igName; ig.href = cms.footer.igUrl || '#'; }
-                const tt = document.getElementById('fTt'); if(tt) { tt.textContent = cms.footer.ttName; tt.href = cms.footer.ttUrl || '#'; }
+                const ig = document.getElementById('fIg'); if(ig) { ig.textContent = cms.footer.igName; ig.href = OhSnapCloud.safeUrl(cms.footer.igUrl, '#'); }
+                const tt = document.getElementById('fTt'); if(tt) { tt.textContent = cms.footer.ttName; tt.href = OhSnapCloud.safeUrl(cms.footer.ttUrl, '#'); }
                 
                 document.getElementById('fCardTitle').textContent = currentLang === 'en' ? (cms.footer.cardTitleEn || 'Find nearby OH SNAP! Studio') : (cms.footer.cardTitleId || 'Find nearby OH SNAP! Studio');
                 document.getElementById('fCardDesc').textContent = currentLang === 'en' ? (cms.footer.cardDescEn || 'Find the nearest booth and studio in your city to capture your special moments today!') : (cms.footer.cardDescId || 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!');
@@ -605,7 +643,7 @@
 
         function setLanguage(lang) {
             currentLang = lang;
-            localStorage.setItem('siteLang', lang);
+            try { localStorage.setItem('siteLang', lang); } catch (e) {}
             document.getElementById('btnEN').classList.toggle('active', lang === 'en');
             document.getElementById('btnID').classList.toggle('active', lang === 'id');
             document.querySelectorAll('[data-en]').forEach(el => {
@@ -619,42 +657,26 @@
         }
 
         async function syncLatestCMS() {
-            let newestLocal = null;
-            const localSaved = localStorage.getItem('ohsnap_cms_data');
-            if (localSaved) {
-                try {
+            try {
+                const localSaved = localStorage.getItem('ohsnap_cms_data');
+                if (localSaved) {
                     const parsed = JSON.parse(localSaved);
-                    if (parsed) {
-                        newestLocal = parsed;
-                        if (JSON.stringify(parsed) + '_' + currentLang !== lastRenderedSignature) {
-                            cms = parsed;
-                            setLanguage(currentLang);
-                        }
+                    if (parsed && JSON.stringify(parsed) + '_' + currentLang !== lastRenderedSignature) {
+                        cms = parsed;
+                        setLanguage(currentLang);
                     }
-                } catch (e) {}
-            }
-            const idbBackup = await getMediaFromIDB('cms_full_backup');
-            if (idbBackup && (!newestLocal || Number(idbBackup.lastUpdated || 0) > Number(newestLocal.lastUpdated || 0))) {
-                newestLocal = idbBackup;
-                if (JSON.stringify(idbBackup) + '_' + currentLang !== lastRenderedSignature) {
-                    cms = idbBackup;
+                }
+            } catch (e) {}
+            try {
+                const cloudCms = await OhSnapCloud.pullIfNewer();
+                if (cloudCms && JSON.stringify(cloudCms) + '_' + currentLang !== lastRenderedSignature) {
+                    cms = cloudCms;
+                    setLanguage(currentLang);
+                } else if (!lastRenderedSignature) {
                     setLanguage(currentLang);
                 }
-            }
-            const cloudCms = await OhSnapCloud.pullIfNewer();
-            if (cloudCms) {
-                const cloudTime = Number(cloudCms.lastUpdated || 0);
-                const localTime = Number((newestLocal && newestLocal.lastUpdated) || 0);
-                const chosen = (newestLocal && localTime > cloudTime) ? newestLocal : cloudCms;
-                if (chosen === newestLocal && localTime > cloudTime) {
-                    try { localStorage.setItem('ohsnap_cms_data', JSON.stringify(newestLocal)); } catch (e) {}
-                }
-                if (JSON.stringify(chosen) + '_' + currentLang !== lastRenderedSignature) {
-                    cms = chosen;
-                    setLanguage(currentLang);
-                }
-            } else if (!lastRenderedSignature) {
-                setLanguage(currentLang);
+            } catch (e) {
+                if (!lastRenderedSignature) setLanguage(currentLang);
             }
             document.documentElement.classList.remove('awaiting-first-cloud');
         }
