@@ -4,31 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lokasi Cabang - OH SNAP! Photobox</title>
-    <meta name="description" content="Temukan cabang OH SNAP! Photobox terdekat di kotamu beserta jam buka dan lokasi Google Maps.">
-    <meta name="theme-color" content="#ff1493">
-    <link rel="icon" href="images/logo-icon.jpg">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="OH SNAP! Photobox">
-    <meta property="og:description" content="Temukan cabang OH SNAP! Photobox terdekat di kotamu beserta jam buka dan lokasi Google Maps.">
+    <meta name="description" content="Lokasi Cabang OH SNAP! Photobox - Temukan studio dan booth terdekat di kotamu.">
+    <link rel="icon" type="image/jpeg" href="images/logo-icon.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
-        (function () {
+        (function() {
             try {
-                var raw = localStorage.getItem('ohsnap_cms_data');
-                var saved = raw ? JSON.parse(raw) : null;
-                var root = document.documentElement;
-                var ok = function (v) { return typeof v === 'string' && /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v.trim()); };
+                const saved = JSON.parse(localStorage.getItem('ohsnap_cms_data'));
                 if (saved && saved.colors) {
-                    var c = saved.colors, r = root.style;
-                    if (ok(c.primary)) r.setProperty('--primary', c.primary.trim());
-                    if (ok(c.secondary)) r.setProperty('--secondary', c.secondary.trim());
-                    if (ok(c.bg)) r.setProperty('--bg-main', c.bg.trim());
-                    if (ok(c.footer)) r.setProperty('--footer-bg', c.footer.trim());
-                }
-                if (!saved) {
-                    // Pengunjung baru: tahan tampil sebentar sampai data Cloud masuk (maks 3,5 dtk)
-                    root.classList.add('awaiting-first-cloud');
-                    setTimeout(function () { root.classList.remove('awaiting-first-cloud'); }, 3500);
+                    const r = document.documentElement.style;
+                    if (saved.colors.primary) r.setProperty('--primary', saved.colors.primary);
+                    if (saved.colors.secondary) r.setProperty('--secondary', saved.colors.secondary);
+                    if (saved.colors.bg) r.setProperty('--bg-main', saved.colors.bg);
+                    if (saved.colors.footer) r.setProperty('--footer-bg', saved.colors.footer);
                 }
             } catch (e) {}
         })();
@@ -108,12 +96,7 @@
         .location-btn-action { background: var(--primary); color: #fff; padding: 12px 28px; border-radius: 50px; font-weight: 700; }
         .footer-bottom { max-width: 1300px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 0.85rem; color: #6b7280; }
 
-        .nav-overlay { display: none; }
-        .logo, .nav-menu a { white-space: nowrap; }
-        html.awaiting-first-cloud .hero-banner-content, html.awaiting-first-cloud .locations-section { opacity: 0; }
-        .hero-banner-content, .locations-section { transition: opacity 0.15s ease; }
-
-        @media screen and (max-width: 1100px) {
+        @media screen and (max-width: 768px) {
             .menu-toggle { display: flex; }
             .nav-container { position: fixed; top: 0; left: -100%; width: 260px; height: 100vh; background: #fff; flex-direction: column; align-items: flex-start; padding: 90px 25px; transition: 0.3s; z-index: 999; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
             .nav-container.active { left: 0; }
@@ -122,15 +105,6 @@
             .lang-switcher { width: 100%; justify-content: center; background: #fdf2f8; border: 1px solid #fbcfe8; padding: 6px; }
             .lang-btn { color: var(--secondary); width: 50%; text-align: center; }
             .lang-btn.active { background: var(--primary); color: #ffffff; }
-            .nav-container { height: 100vh; height: 100dvh; visibility: hidden; transition: left 0.3s ease, visibility 0s linear 0.3s; }
-            .nav-container.active { visibility: visible; transition: left 0.3s ease, visibility 0s; }
-            header.nav-open .logo { color: var(--secondary); }
-            header.nav-open .logo span { color: var(--primary); }
-            .menu-toggle { box-sizing: content-box; padding: 11px 8px; margin: -11px -8px; }
-            .nav-overlay { display: block; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.35); z-index: 998; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-            .nav-overlay.active { opacity: 1; pointer-events: auto; }
-        }
-        @media screen and (max-width: 768px) {
             .hero-banner-section { height: 260px; }
             .hero-banner-content h1 { font-size: 1.8rem; }
             .footer-content { grid-template-columns: 1fr; }
@@ -143,7 +117,7 @@
             <img src="images/logo-icon.jpg" alt="OH SNAP! Logo" class="brand-logo-img" onerror="this.style.display='none'">
             <span class="logo">OH SNAP<span>!</span></span>
         </a>
-        <button type="button" class="menu-toggle" id="menuToggle" aria-label="Menu"><span></span><span></span><span></span></button>
+        <button class="menu-toggle" id="menuToggle" aria-label="Menu Navigasi"><span></span><span></span><span></span></button>
         <div class="nav-container" id="navContainer">
             <nav class="nav-menu">
                 <a href="index.html" data-en="Home" data-id="Halaman">Halaman</a>
@@ -154,8 +128,8 @@
                 <a href="kontak.html" data-en="Contact" data-id="Kontak">Kontak</a>
             </nav>
             <div class="lang-switcher">
-                <button type="button" class="lang-btn" id="btnEN" aria-label="English" onclick="setLanguage('en')">EN</button>
-                <button type="button" class="lang-btn active" id="btnID" aria-label="Bahasa Indonesia" onclick="setLanguage('id')">ID</button>
+                <button class="lang-btn" id="btnEN" onclick="setLanguage('en')">EN</button>
+                <button class="lang-btn active" id="btnID" onclick="setLanguage('id')">ID</button>
             </div>
         </div>
     </header>
@@ -176,8 +150,8 @@
             <div class="footer-left">
                 <h3 id="fBrand">OH SNAP! Photobox Group</h3>
                 <address><strong data-en="Branches:" data-id="Cabang:">Cabang:</strong> <span id="fBranches">Kediri Mall Lt.5, Plaza Cilacap Lt.3</span></address>
-                <p>Instagram: <a id="fIg" href="#" target="_blank" rel="noopener noreferrer">@ohsnap_photobox</a></p>
-                <p>TikTok: <a id="fTt" href="#" target="_blank" rel="noopener noreferrer">@ohsnap_photobox</a></p>
+                <p>Instagram: <a id="fIg" href="#" target="_blank">@ohsnap_photobox</a></p>
+                <p>TikTok: <a id="fTt" href="#" target="_blank">@ohsnap_photobox</a></p>
                 <div class="footer-helpdesk">
                     <h4 data-en="Helpdesk" data-id="Bantuan">Helpdesk</h4>
                     <ul>
@@ -197,54 +171,109 @@
 
     <script src="cms-cloud.js"></script>
     <script>
-        (function () {
-            const U = OhSnapCloud.util;
-            const esc = U.escHtml;
+        let currentLang = 'id';
+        try { currentLang = localStorage.getItem('siteLang') || 'id'; } catch (e) {}
+        let cms = null;
+        try { cms = JSON.parse(localStorage.getItem('ohsnap_cms_data')); } catch (e) {}
+        let lastRenderedSignature = '';
 
-            const defaultLocations = [
-                { name: 'Kediri Mall', floor: 'Lantai 5', hours: '10.00 - 22.00', mapUrl: 'https://maps.google.com/?q=OH+SNAP+Photobox+Kediri+Mall', img: '' },
-                { name: 'Plaza Cilacap', floor: 'Lantai 3', hours: '10.00 - 22.00', mapUrl: 'https://maps.google.com/?q=OH+SNAP+Photobox+Plaza+Cilacap', img: '' },
-                { name: 'Laksana Baru', floor: 'Lantai 3', hours: '10.00 - 22.00', mapUrl: 'https://maps.google.com/?q=OH+SNAP+Photobox+Laksana+Baru+Pekalongan', img: '' },
-                { name: 'Plaza Pekalongan', floor: 'Lantai 2', hours: '10.00 - 22.00', mapUrl: 'https://maps.google.com/?q=OH+SNAP+Photobox+Plaza+Pekalongan', img: '' },
-                { name: 'Yogya Pemalang', floor: 'Lantai 3', hours: '10.00 - 22.00', mapUrl: 'https://maps.google.com/?q=OH+SNAP+Photobox+Yogya+Pemalang', img: '' }
-            ];
-            const defaultBanner = { titleId: 'Lokasi <span>Studio</span>', titleEn: 'Our <span>Locations</span>', subId: 'Kunjungi cabang terdekat kami di kotamu dan abadikan keseruan bersama orang tersayang!', subEn: 'Visit our nearest branch in your city!', imgUrl: '' };
+        function escHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
 
-            document.addEventListener('error', function (e) {
-                const t = e.target;
-                if (t && t.dataset && t.dataset.fallback === 'img' && t.parentElement) {
-                    t.outerHTML = '<div class="empty-landscape-location"></div>';
+        (function() {
+            const btn = document.getElementById('menuToggle');
+            const nav = document.getElementById('navContainer');
+            if (!btn || !nav) return;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                nav.classList.toggle('active');
+            });
+            document.addEventListener('click', (e) => {
+                if (nav.classList.contains('active') && !nav.contains(e.target) && !btn.contains(e.target)) {
+                    nav.classList.remove('active');
                 }
-            }, true);
+            });
+        })();
 
-            function render(cms, lang) {
-                const en = lang === 'en';
-                const list = (cms && Array.isArray(cms.locations) && cms.locations.length > 0) ? cms.locations : defaultLocations;
-                const b = (cms && cms.banners && cms.banners.lokasi) ? cms.banners.lokasi : defaultBanner;
+        const defaultLocations = [
+            { name: 'Kediri Mall', floor: 'Lantai 5', hours: '10.00 - 22.00', mapUrl: 'https://maps.google.com/?q=OH+SNAP+Photobox+Kediri+Mall', img: '' },
+            { name: 'Plaza Cilacap', floor: 'Lantai 3', hours: '10.00 - 22.00', mapUrl: 'https://maps.google.com/?q=OH+SNAP+Photobox+Plaza+Cilacap', img: '' },
+            { name: 'Laksana Baru', floor: 'Lantai 3', hours: '10.00 - 22.00', mapUrl: 'https://maps.google.com/?q=OH+SNAP+Photobox+Laksana+Baru+Pekalongan', img: '' },
+            { name: 'Plaza Pekalongan', floor: 'Lantai 2', hours: '10.00 - 22.00', mapUrl: 'https://maps.google.com/?q=OH+SNAP+Photobox+Plaza+Pekalongan', img: '' },
+            { name: 'Yogya Pemalang', floor: 'Lantai 3', hours: '10.00 - 22.00', mapUrl: 'https://maps.google.com/?q=OH+SNAP+Photobox+Yogya+Pemalang', img: '' }
+        ];
 
-                U.sanitizeRichInto(document.getElementById('heroTitle'), en ? (b.titleEn || b.titleId || '') : (b.titleId || ''));
-                U.setText('heroSub', en ? (b.subEn || b.subId || '') : (b.subId || ''));
-                const bg = (b.imgUrl && b.imgUrl.trim() !== '' && b.imgUrl !== 'images/banner-lokasi.jpg') ? U.cssUrl(b.imgUrl) : 'none';
-                const heroBg = document.getElementById('heroBannerBg');
-                if (heroBg.dataset.bg !== bg) { heroBg.dataset.bg = bg; heroBg.style.backgroundImage = bg; }
-
-                document.getElementById('locationsGrid').innerHTML = list.map(l => {
-                    const img = U.safeUrl(l.img, 'img');
-                    const map = U.safeUrl(l.mapUrl, 'link') || ('https://maps.google.com/?q=OH+SNAP+Photobox+' + encodeURIComponent(l.name || ''));
-                    return '<div class="location-card">' +
-                        (img ? '<img src="' + esc(img) + '" alt="' + esc(l.name) + '" data-fallback="img">' : '<div class="empty-landscape-location"></div>') +
-                        '<div class="location-info"><div>' +
-                        '<span class="location-floor">' + esc(l.floor || 'Lantai 1') + '</span>' +
-                        '<h3>' + esc(l.name) + '</h3>' +
-                        '<div class="location-hours">🕒 ' + esc(l.hours || '10.00 - 22.00') + '</div>' +
-                        '</div>' +
-                        '<a href="' + esc(map) + '" target="_blank" rel="noopener noreferrer" class="btn-maps">🗺️ Buka Google Maps</a>' +
-                        '</div></div>';
-                }).join('');
+        function applyCMS() {
+            const list = (cms && cms.locations && cms.locations.length > 0) ? cms.locations : defaultLocations;
+            if (cms && cms.colors) {
+                document.documentElement.style.setProperty('--primary', cms.colors.primary || '#ff1493');
+                document.documentElement.style.setProperty('--secondary', cms.colors.secondary || '#2b4c7e');
+                document.documentElement.style.setProperty('--bg-main', cms.colors.bg || '#fff0f5');
+                document.documentElement.style.setProperty('--footer-bg', cms.colors.footer || '#18171d');
+            }
+            const b = (cms && cms.banners && cms.banners.lokasi) ? cms.banners.lokasi : { titleId: 'Lokasi <span>Studio</span>', titleEn: 'Our <span>Locations</span>', subId: 'Kunjungi cabang terdekat kami di kotamu dan abadikan keseruan bersama orang tersayang!', subEn: 'Visit our nearest branch in your city!', imgUrl: '' };
+            document.getElementById('heroTitle').innerHTML = OhSnapCloud.safeTitleHtml(currentLang === 'en' ? (b.titleEn || b.titleId) : b.titleId);
+            document.getElementById('heroSub').textContent = currentLang === 'en' ? (b.subEn || b.subId) : b.subId;
+            if (b.imgUrl && b.imgUrl.trim() !== '' && b.imgUrl !== 'images/banner-lokasi.jpg') {
+                document.getElementById('heroBannerBg').style.backgroundImage = `url("${OhSnapCloud.safeUrl(b.imgUrl, '')}")`;
+            } else {
+                document.getElementById('heroBannerBg').style.backgroundImage = 'none';
             }
 
-            OhSnapCloud.util.createPage(render);
-        })();
+            document.getElementById('locationsGrid').innerHTML = list.map(l => `
+                <div class="location-card">
+                    ${OhSnapCloud.safeUrl(l.img, '') ? `<img src="${escHtml(OhSnapCloud.safeUrl(l.img, ''))}" alt="${escHtml(l.name)}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'empty-landscape-location\\'></div>';">` : `<div class="empty-landscape-location"></div>`}
+                    <div class="location-info">
+                        <div>
+                            <span class="location-floor">${escHtml(l.floor || 'Lantai 1')}</span>
+                            <h3>${escHtml(l.name)}</h3>
+                            <div class="location-hours">🕒 ${escHtml(l.hours || '10.00 - 22.00')}</div>
+                        </div>
+                        <a href="${escHtml(OhSnapCloud.safeUrl(l.mapUrl, 'https://maps.google.com/?q=OH+SNAP+Photobox+' + encodeURIComponent(l.name)))}" target="_blank" class="btn-maps">🗺️ Buka Google Maps</a>
+                    </div>
+                </div>
+            `).join('');
+
+            if (cms && cms.footer) {
+                document.getElementById('fBrand').textContent = cms.footer.brand;
+                document.getElementById('fBranches').textContent = cms.footer.branches;
+                const ig = document.getElementById('fIg'); if(ig) { ig.textContent = cms.footer.igName; ig.href = OhSnapCloud.safeUrl(cms.footer.igUrl, '#'); }
+                const tt = document.getElementById('fTt'); if(tt) { tt.textContent = cms.footer.ttName; tt.href = OhSnapCloud.safeUrl(cms.footer.ttUrl, '#'); }
+
+                document.getElementById('fCardTitle').textContent = currentLang === 'en' ? (cms.footer.cardTitleEn || 'Find nearby OH SNAP! Studio') : (cms.footer.cardTitleId || 'Find nearby OH SNAP! Studio');
+                document.getElementById('fCardDesc').textContent = currentLang === 'en' ? (cms.footer.cardDescEn || 'Find the nearest booth and studio in your city to capture your special moments today!') : (cms.footer.cardDescId || 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!');
+                document.getElementById('fCopy').textContent = cms.footer.copyright;
+            }
+            try { lastRenderedSignature = JSON.stringify(cms) + '_' + currentLang; } catch (e) {}
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            try { localStorage.setItem('siteLang', lang); } catch (e) {}
+            document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+            document.getElementById('btnID').classList.toggle('active', lang === 'id');
+            document.querySelectorAll('[data-en]').forEach(el => { el.innerHTML = el.getAttribute('data-' + lang); });
+            applyCMS();
+        }
+
+        // Render sinkron instan (0ms) tanpa kedipan
+        setLanguage(currentLang);
+
+        async function syncLatestCMS() {
+            try {
+                const cloudCms = await OhSnapCloud.pullIfNewer();
+                if (cloudCms && JSON.stringify(cloudCms) + '_' + currentLang !== lastRenderedSignature) {
+                    cms = cloudCms;
+                    applyCMS();
+                }
+            } catch (e) {}
+        }
+
+        window.addEventListener('storage', () => { syncLatestCMS(); });
+        window.addEventListener('focus', () => { syncLatestCMS(); });
+        syncLatestCMS();
     </script>
 </body>
 </html>

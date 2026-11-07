@@ -4,31 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OH SNAP! Photobox - Capture Your Fun Moments</title>
-    <meta name="description" content="OH SNAP! Photobox - photobox & self-photo studio dengan cetak langsung di berbagai mall. Cek lokasi, layanan, frame, dan promo terbaru.">
-    <meta name="theme-color" content="#ff1493">
-    <link rel="icon" href="images/logo-icon.jpg">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="OH SNAP! Photobox">
-    <meta property="og:description" content="OH SNAP! Photobox - photobox & self-photo studio dengan cetak langsung di berbagai mall. Cek lokasi, layanan, frame, dan promo terbaru.">
+    <meta name="description" content="OH SNAP! Photobox - Photobox & Self-Photo Studio kekinian di berbagai pusat perbelanjaan Indonesia.">
+    <link rel="icon" type="image/jpeg" href="images/logo-icon.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
-        (function () {
+        (function() {
             try {
-                var raw = localStorage.getItem('ohsnap_cms_data');
-                var saved = raw ? JSON.parse(raw) : null;
-                var root = document.documentElement;
-                var ok = function (v) { return typeof v === 'string' && /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(v.trim()); };
-                if (saved && saved.colors) {
-                    var c = saved.colors, r = root.style;
-                    if (ok(c.primary)) r.setProperty('--primary', c.primary.trim());
-                    if (ok(c.secondary)) r.setProperty('--secondary', c.secondary.trim());
-                    if (ok(c.bg)) r.setProperty('--bg-main', c.bg.trim());
-                    if (ok(c.footer)) r.setProperty('--footer-bg', c.footer.trim());
-                }
-                if (!saved) {
-                    // Pengunjung baru: tahan tampil sebentar sampai data Cloud masuk (maks 3,5 dtk)
-                    root.classList.add('awaiting-first-cloud');
-                    setTimeout(function () { root.classList.remove('awaiting-first-cloud'); }, 3500);
+                const raw = localStorage.getItem('ohsnap_cms_data');
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    if (saved && saved.colors) {
+                        const r = document.documentElement.style;
+                        if (saved.colors.primary) r.setProperty('--primary', saved.colors.primary);
+                        if (saved.colors.secondary) r.setProperty('--secondary', saved.colors.secondary);
+                        if (saved.colors.bg) r.setProperty('--bg-main', saved.colors.bg);
+                        if (saved.colors.footer) r.setProperty('--footer-bg', saved.colors.footer);
+                    }
+                } else {
+                    // Pengunjung baru pertama kali (localStorage kosong): tahan render teks default sampai data Cloud masuk
+                    document.documentElement.classList.add('awaiting-first-cloud');
+                    setTimeout(() => document.documentElement.classList.remove('awaiting-first-cloud'), 700);
                 }
             } catch (e) {}
         })();
@@ -184,15 +179,12 @@
         .location-btn-action { background: var(--primary); color: #fff; padding: 12px 28px; border-radius: 50px; font-weight: 700; font-size: 0.95rem; }
         .footer-bottom { max-width: 1300px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 0.85rem; color: #6b7280; }
 
-        .nav-overlay { display: none; }
-        .logo, .nav-menu a { white-space: nowrap; }
-
         @media screen and (max-width: 1024px) {
             .slide-item-studio { flex: 0 0 calc((100% - 32px) / 3); }
             .slide-item-promo { flex: 0 0 calc((100% - 16px) / 2); }
             .slide-item-video { flex: 0 0 calc((100% - 32px) / 3); }
         }
-        @media screen and (max-width: 1100px) {
+        @media screen and (max-width: 768px) {
             .menu-toggle { display: flex; }
             .nav-container { position: fixed; top: 0; left: -100%; width: 260px; height: 100vh; background: #fff; flex-direction: column; align-items: flex-start; padding: 90px 25px; transition: 0.3s; z-index: 999; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
             .nav-container.active { left: 0; }
@@ -201,15 +193,6 @@
             .lang-switcher { width: 100%; justify-content: center; background: #fdf2f8; border: 1px solid #fbcfe8; padding: 6px; }
             .lang-btn { color: var(--secondary); width: 50%; text-align: center; }
             .lang-btn.active { background: var(--primary); color: #ffffff; }
-            .nav-container { height: 100vh; height: 100dvh; visibility: hidden; transition: left 0.3s ease, visibility 0s linear 0.3s; }
-            .nav-container.active { visibility: visible; transition: left 0.3s ease, visibility 0s; }
-            header.nav-open .logo { color: var(--secondary); }
-            header.nav-open .logo span { color: var(--primary); }
-            .menu-toggle { box-sizing: content-box; padding: 11px 8px; margin: -11px -8px; }
-            .nav-overlay { display: block; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.35); z-index: 998; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-            .nav-overlay.active { opacity: 1; pointer-events: auto; }
-        }
-        @media screen and (max-width: 768px) {
             .hero-banner-section { height: 350px; }
             .hero-banner-content h1 { font-size: 2.1rem; }
             .about-grid-container { grid-template-columns: 1fr; }
@@ -227,7 +210,7 @@
             <img src="images/logo-icon.jpg" alt="OH SNAP! Logo" class="brand-logo-img" onerror="this.style.display='none'">
             <span class="logo">OH SNAP<span>!</span></span>
         </a>
-        <button type="button" class="menu-toggle" id="menuToggle" aria-label="Menu"><span></span><span></span><span></span></button>
+        <button class="menu-toggle" id="menuToggle" aria-label="Menu Navigasi"><span></span><span></span><span></span></button>
         <div class="nav-container" id="navContainer">
             <nav class="nav-menu">
                 <a href="index.html" class="active" data-en="Home" data-id="Halaman">Halaman</a>
@@ -238,8 +221,8 @@
                 <a href="kontak.html" data-en="Contact" data-id="Kontak">Kontak</a>
             </nav>
             <div class="lang-switcher">
-                <button type="button" class="lang-btn" id="btnEN" aria-label="English" onclick="setLanguage('en')">EN</button>
-                <button type="button" class="lang-btn active" id="btnID" aria-label="Bahasa Indonesia" onclick="setLanguage('id')">ID</button>
+                <button class="lang-btn" id="btnEN" onclick="setLanguage('en')">EN</button>
+                <button class="lang-btn active" id="btnID" onclick="setLanguage('id')">ID</button>
             </div>
         </div>
     </header>
@@ -272,9 +255,9 @@
             <p id="secStudioSub"></p>
         </div>
         <div class="slider-wrapper">
-            <button type="button" aria-label="Sebelumnya" class="slider-btn slider-btn-left" onclick="scrollSlider('studioGrid', -1)">&#10094;</button>
+            <button class="slider-btn slider-btn-left" onclick="scrollSlider('studioGrid', -1)">&#10094;</button>
             <div id="studioGrid" class="slider-container"></div>
-            <button type="button" aria-label="Berikutnya" class="slider-btn slider-btn-right" onclick="scrollSlider('studioGrid', 1)">&#10095;</button>
+            <button class="slider-btn slider-btn-right" onclick="scrollSlider('studioGrid', 1)">&#10095;</button>
         </div>
     </section>
 
@@ -285,9 +268,9 @@
             <p id="secPromoSub"></p>
         </div>
         <div class="slider-wrapper">
-            <button type="button" aria-label="Sebelumnya" class="slider-btn slider-btn-left" onclick="scrollSlider('promoGrid', -1)">&#10094;</button>
+            <button class="slider-btn slider-btn-left" onclick="scrollSlider('promoGrid', -1)">&#10094;</button>
             <div id="promoGrid" class="slider-container"></div>
-            <button type="button" aria-label="Berikutnya" class="slider-btn slider-btn-right" onclick="scrollSlider('promoGrid', 1)">&#10095;</button>
+            <button class="slider-btn slider-btn-right" onclick="scrollSlider('promoGrid', 1)">&#10095;</button>
         </div>
     </section>
 
@@ -298,9 +281,9 @@
             <p id="secVideoSub"></p>
         </div>
         <div class="slider-wrapper">
-            <button type="button" aria-label="Sebelumnya" class="slider-btn slider-btn-left" onclick="scrollSlider('videoGrid', -1)">&#10094;</button>
+            <button class="slider-btn slider-btn-left" onclick="scrollSlider('videoGrid', -1)">&#10094;</button>
             <div id="videoGrid" class="slider-container"></div>
-            <button type="button" aria-label="Berikutnya" class="slider-btn slider-btn-right" onclick="scrollSlider('videoGrid', 1)">&#10095;</button>
+            <button class="slider-btn slider-btn-right" onclick="scrollSlider('videoGrid', 1)">&#10095;</button>
         </div>
     </section>
 
@@ -309,8 +292,8 @@
             <div class="footer-left">
                 <h3 id="fBrand">OH SNAP! Photobox Group</h3>
                 <address><strong data-en="Branches:" data-id="Cabang:">Cabang:</strong> <span id="fBranches">Kediri Mall Lt.5, Plaza Cilacap Lt.3</span></address>
-                <p>Instagram: <a id="fIg" href="#" target="_blank" rel="noopener noreferrer">@ohsnap_photobox</a></p>
-                <p>TikTok: <a id="fTt" href="#" target="_blank" rel="noopener noreferrer">@ohsnap_photobox</a></p>
+                <p>Instagram: <a id="fIg" href="#" target="_blank">@ohsnap_photobox</a></p>
+                <p>TikTok: <a id="fTt" href="#" target="_blank">@ohsnap_photobox</a></p>
                 <div class="footer-helpdesk">
                     <h4 data-en="Helpdesk" data-id="Bantuan">Helpdesk</h4>
                     <ul>
@@ -330,192 +313,361 @@
 
     <script src="cms-cloud.js"></script>
     <script>
-        (function () {
-            const U = OhSnapCloud.util;
-            const esc = U.escHtml;
+        let currentLang = 'id';
+        try { currentLang = localStorage.getItem('siteLang') || 'id'; } catch (e) {}
 
-            const defaultCMS = {
-                banners: {
-                    home: { titleId: 'LANGSUNG CETAK BAWA PULANG', titleEn: 'INSTANT PRINT & TAKE IT HOME', subId: 'Photobox & Self-Photo Studio kekinian.', subEn: 'Trendy Photobox Studio.', imgUrl: '' },
-                    about: {
-                        titleId: 'About Our <span>Story</span>', titleEn: 'About Our <span>Story</span>',
-                        subId: 'OH SNAP! Photobox hadir dari semangat untuk mengabadikan setiap momen hangat, spontan, dan tak terlupakan bersama orang-orang tersayang. Berawal dari konsep photobox tematik yang unik dan kreatif, kini kami hadir di berbagai pusat perbelanjaan (Mall).',
-                        subEn: 'OH SNAP! Photobox was born from the spirit of capturing warm, spontaneous, and unforgettable moments with your favorite people...',
-                        btnId: 'Read more →', btnEn: 'Read more →',
-                        imgUrl: ''
-                    }
-                },
-                titles: {
-                    titlePromoId: 'Promo <span>Spesial</span> Bulan Ini',
-                    titlePromoEn: 'This Month\'s <span>Special</span> Promo',
-                    subPromoId: 'Jangan lewatkan penawaran menarik di berbagai cabang OH SNAP! Photobox',
-                    subPromoEn: 'Don\'t miss exciting offers at various OH SNAP! Photobox branches',
-                    titleStudioId: 'Suasana <span>Studio & Booth</span>',
-                    titleStudioEn: '<span>Studio & Booth</span> Vibes',
-                    subStudioId: 'Intip keseruan dan estetika bilik tematik kami di berbagai kota',
-                    subStudioEn: 'Take a peek at the fun and aesthetics of our thematic booths across cities',
-                    titleVideoId: 'Keseruan Sobat <span>OH SNAP!</span>',
-                    titleVideoEn: 'Fun Moments with <span>OH SNAP!</span>',
-                    subVideoId: 'Video feed momen seru pelanggan kami di bilik photobox',
-                    subVideoEn: 'Video feed of our customers\' fun moments in the photobox booth'
-                },
-                studios: [
-                    { title: 'Booth Train Thematic', desc: 'Desain kabin kereta estetik', img: '' },
-                    { title: 'Booth Hotel & Elevator', desc: 'Nuansa lobi hotel & lift', img: '' },
-                    { title: 'Booth Claw & Pastel', desc: 'Warna cerah penuh keceriaan', img: '' },
-                    { title: 'Booth Portable Series', desc: 'Gaya minimalis modern', img: '' }
-                ],
-                videos: [
-                    { title: 'Video 1', url: '' }, { title: 'Video 2', url: '' }, { title: 'Video 3', url: '' },
-                    { title: 'Video 4', url: '' }, { title: 'Video 5', url: '' }
-                ],
-                promos: [
-                    { title: 'Promo Pelajar & Mahasiswa', badge: 'HOT PROMO', desc: 'Diskon spesial KTM aktif!', img: '' },
-                    { title: 'Paket Bundling Extra Print', badge: 'BEST DEAL', desc: 'Cetak lebih banyak untuk geng.', img: '' },
-                    { title: 'Weekend Flash Sale', badge: 'LIMITED', desc: 'Potongan harga khusus.', img: '' }
-                ]
-            };
+        function escHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
 
-            const LEGACY = ['images/hero-banner.jpg', 'images/about-img.jpg'];
-            let lastStudioSig = '', lastPromoSig = '', lastVideoSig = '';
-
-            const sliders = {
-                studioGrid: U.initSlider('studioGrid', { alwaysShow: true }),
-                promoGrid: U.initSlider('promoGrid', { alwaysShow: true }),
-                videoGrid: U.initSlider('videoGrid', { alwaysShow: true })
-            };
-            window.scrollSlider = function (id, dir) { if (sliders[id]) sliders[id].scroll(dir); };
-
-            // gambar/video gagal dimuat -> ganti kotak kosong (menggantikan atribut onerror inline)
-            document.addEventListener('error', function (e) {
-                const t = e.target;
-                if (!t || !t.dataset || !t.dataset.fallback) return;
-                if (t.dataset.fallback === 'img') {
-                    if (t.parentElement) t.parentElement.outerHTML = '<div class="empty-portrait-box"></div>';
-                } else if (t.dataset.fallback === 'video') {
-                    t.outerHTML = '<div class="empty-portrait-video"></div>';
-                }
-            }, true);
-
-            // hanya satu video yang diputar
-            document.getElementById('videoGrid').addEventListener('play', function (e) {
-                document.querySelectorAll('#videoGrid video').forEach(v => { if (v !== e.target) v.pause(); });
-            }, true);
-
-            function hostIs(url, domain) {
+        function getMediaFromIDB(key) {
+            return new Promise((resolve) => {
                 try {
-                    const h = new URL(url, location.href).hostname.toLowerCase();
-                    return h === domain || h.endsWith('.' + domain);
-                } catch (e) { return false; }
+                if (typeof indexedDB === 'undefined') return resolve(null);
+                const req = indexedDB.open('ohsnap_media_db', 2);
+                req.onupgradeneeded = function(e) {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('media')) {
+                        db.createObjectStore('media');
+                    }
+                };
+                req.onsuccess = function(e) {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('media')) return resolve(null);
+                    const tx = db.transaction('media', 'readonly');
+                    const getReq = tx.objectStore('media').get(key);
+                    getReq.onsuccess = () => resolve(getReq.result || null);
+                    getReq.onerror = () => resolve(null);
+                };
+                req.onerror = () => resolve(null);
+                } catch (e) { resolve(null); }
+            });
+        }
+        
+        const defaultCMS = {
+            colors: { primary: '#ff1493', secondary: '#2b4c7e', bg: '#fff0f5', footer: '#18171d' },
+            banners: {
+                home: { titleId: 'LANGSUNG CETAK BAWA PULANG', titleEn: 'INSTANT PRINT & TAKE IT HOME', subId: 'Photobox & Self-Photo Studio kekinian.', subEn: 'Trendy Photobox Studio.', imgUrl: '' },
+                about: { 
+                    titleId: 'About Our <span>Story</span>', titleEn: 'About Our <span>Story</span>', 
+                    subId: 'OH SNAP! Photobox hadir dari semangat untuk mengabadikan setiap momen hangat, spontan, dan tak terlupakan bersama orang-orang tersayang. Berawal dari konsep photobox tematik yang unik dan kreatif, kini kami hadir di berbagai pusat perbelanjaan (Mall).',
+                    subEn: 'OH SNAP! Photobox was born from the spirit of capturing warm, spontaneous, and unforgettable moments with your favorite people...',
+                    btnId: 'Read more →', btnEn: 'Read more →',
+                    imgUrl: '' 
+                }
+            },
+            titles: { 
+                titlePromoId: 'Promo <span>Spesial</span> Bulan Ini',
+                titlePromoEn: 'This Month\'s <span>Special</span> Promo',
+                subPromoId: 'Jangan lewatkan penawaran menarik di berbagai cabang OH SNAP! Photobox',
+                subPromoEn: 'Don\'t miss exciting offers at various OH SNAP! Photobox branches',
+                titleStudioId: 'Suasana <span>Studio & Booth</span>',
+                titleStudioEn: '<span>Studio & Booth</span> Vibes',
+                subStudioId: 'Intip keseruan dan estetika bilik tematik kami di berbagai kota',
+                subStudioEn: 'Take a peek at the fun and aesthetics of our thematic booths across cities',
+                titleVideoId: 'Keseruan Sobat <span>OH SNAP!</span>',
+                titleVideoEn: 'Fun Moments with <span>OH SNAP!</span>',
+                subVideoId: 'Video feed momen seru pelanggan kami di bilik photobox',
+                subVideoEn: 'Video feed of our customers\' fun moments in the photobox booth'
+            },
+            studios: [
+                { title: 'Booth Train Thematic', desc: 'Desain kabin kereta estetik', img: '' },
+                { title: 'Booth Hotel & Elevator', desc: 'Nuansa lobi hotel & lift', img: '' },
+                { title: 'Booth Claw & Pastel', desc: 'Warna cerah penuh keceriaan', img: '' },
+                { title: 'Booth Portable Series', desc: 'Gaya minimalis modern', img: '' }
+            ],
+            videos: [
+                { title: 'Video 1', url: '' },
+                { title: 'Video 2', url: '' },
+                { title: 'Video 3', url: '' },
+                { title: 'Video 4', url: '' },
+                { title: 'Video 5', url: '' }
+            ],
+            promos: [
+                { title: 'Promo Pelajar & Mahasiswa', badge: 'HOT PROMO', desc: 'Diskon spesial KTM aktif!', img: '' },
+                { title: 'Paket Bundling Extra Print', badge: 'BEST DEAL', desc: 'Cetak lebih banyak untuk geng.', img: '' },
+                { title: 'Weekend Flash Sale', badge: 'LIMITED', desc: 'Potongan harga khusus.', img: '' }
+            ],
+            footer: { 
+                brand: 'OH SNAP! Photobox Group', 
+                branches: 'Kediri Mall Lt.5, Plaza Cilacap Lt.3', 
+                igName: '@ohsnap_photobox', 
+                igUrl: '#', 
+                ttName: '@ohsnap_photobox', 
+                ttUrl: '#', 
+                cardTitleId: 'Find nearby OH SNAP! Studio',
+                cardTitleEn: 'Find nearby OH SNAP! Studio',
+                cardDescId: 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!',
+                cardDescEn: 'Find the nearest booth and studio in your city to capture your special moments today!',
+                copyright: '© 2026 OH SNAP! Photobox. All rights reserved.' 
             }
+        };
 
-            function cardImg(src, alt) {
-                const safe = U.safeUrl(src, 'img');
-                if (!safe) return '<div class="empty-portrait-box"></div>';
-                return '<div style="width:100%; height:460px; overflow:hidden; background:#fff;"><img src="' + esc(safe) + '" alt="' + esc(alt) + '" data-fallback="img" style="width: 100%; height: 460px; object-fit: cover; display:block;"></div>';
+        let cms = defaultCMS;
+        let hasInitialLocal = false;
+        try {
+            const parsed = JSON.parse(localStorage.getItem('ohsnap_cms_data'));
+            if (parsed && typeof parsed === 'object') {
+                cms = parsed;
+                hasInitialLocal = true;
             }
+        } catch (e) {}
 
-            function videoHtml(v) {
-                const rawUrl = (v && v.url) ? String(v.url).trim() : '';
-                const empty = '<div class="empty-portrait-video"></div>';
-                if (rawUrl === '' || rawUrl === '#' || rawUrl === 'images/video-1.mp4' || rawUrl.startsWith('[')) return empty;
-                const cleanUrl = rawUrl.replace(/^#/, '').trim();
-                if (/^idb:/i.test(cleanUrl)) return empty; // video lokal browser admin: tidak ada di perangkat lain
-                const link = U.safeUrl(cleanUrl, 'link');
-                if (!link) return empty;
-                const isTikTok = hostIs(link, 'tiktok.com'), isIg = hostIs(link, 'instagram.com');
-                if (isTikTok || isIg) {
-                    const platformName = isTikTok ? 'TikTok' : 'Instagram';
-                    return '<div style="position:relative; width:100%; height:480px; border-radius:24px; border:2px solid #fbcfe8; overflow:hidden; background:#111; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">' +
-                        '<div style="position:absolute; inset:0; background:linear-gradient(135deg, #2b4c7e 0%, #ff1493 100%); opacity:0.85;"></div>' +
-                        '<div style="position:relative; z-index:2; padding:20px; display:flex; flex-direction:column; align-items:center; gap:14px;">' +
-                        '<div style="width:60px; height:60px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.5rem; box-shadow:0 6px 20px rgba(0,0,0,0.4);">▶</div>' +
-                        '<span style="color:#fff; font-weight:700; font-size:1.05rem; text-shadow:0 2px 8px rgba(0,0,0,0.8);">Tonton di ' + platformName + '</span>' +
-                        '<a href="' + esc(link) + '" target="_blank" rel="noopener noreferrer" style="background:#fff; color:var(--secondary); padding:10px 24px; border-radius:50px; font-weight:800; font-size:0.9rem; text-decoration:none; box-shadow:0 4px 15px rgba(0,0,0,0.3); transition:0.2s;">Buka Tautan →</a>' +
-                        '</div></div>';
+        let lastRenderedSignature = '';
+        let lastStudioSig = '';
+        let lastPromoSig = '';
+        let lastVideoSig = '';
+
+        (function() {
+            const btn = document.getElementById('menuToggle');
+            const nav = document.getElementById('navContainer');
+            if (!btn || !nav) return;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                nav.classList.toggle('active');
+            });
+            document.addEventListener('click', (e) => {
+                if (nav.classList.contains('active') && !nav.contains(e.target) && !btn.contains(e.target)) {
+                    nav.classList.remove('active');
                 }
-                const media = U.safeUrl(cleanUrl, 'media');
-                if (media) {
-                    return '<video class="auto-pause-video" src="' + esc(media) + '" preload="metadata" controls playsinline loop data-fallback="video" style="width: 100%; height: 480px; object-fit: cover; border-radius: 24px; border: 2px solid #fbcfe8; background:#000;"></video>';
-                }
-                return empty;
-            }
-
-            function render(cms, lang) {
-                const en = lang === 'en';
-                const src = cms || {};
-                const banners = src.banners || {};
-                const hb = Object.assign({}, defaultCMS.banners.home, banners.home || {});
-                const ab = Object.assign({}, defaultCMS.banners.about, banners.about || {});
-
-                U.sanitizeRichInto(document.getElementById('heroTitle'), en ? (hb.titleEn || hb.titleId || '') : (hb.titleId || ''));
-                U.setText('heroSub', en ? (hb.subEn || hb.subId || '') : (hb.subId || ''));
-                const heroBg = document.getElementById('heroBannerBg');
-                const heroImg = (hb.imgUrl && hb.imgUrl.trim() !== '' && LEGACY.indexOf(hb.imgUrl) < 0) ? U.cssUrl(hb.imgUrl) : 'none';
-                if (heroBg.dataset.bg !== heroImg) { heroBg.dataset.bg = heroImg; heroBg.style.backgroundImage = heroImg; }
-
-                if (ab.titleId || ab.titleEn) U.sanitizeRichInto(document.getElementById('aboutTitle'), en ? (ab.titleEn || ab.titleId) : (ab.titleId || ab.titleEn));
-                if (ab.subId || ab.subEn) U.setText('aboutSub', en ? (ab.subEn || ab.subId) : (ab.subId || ab.subEn));
-                if (ab.btnId || ab.btnEn) U.setText('aboutBtn', en ? (ab.btnEn || ab.btnId) : (ab.btnId || ab.btnEn));
-
-                const aboutImgEl = document.getElementById('aboutImg');
-                let aboutSrc = '';
-                if (ab.imgUrl && ab.imgUrl.trim() !== '' && LEGACY.indexOf(ab.imgUrl) < 0) aboutSrc = ab.imgUrl;
-                else if (banners.home && banners.home.aboutImgUrl && banners.home.aboutImgUrl.trim() !== '' && LEGACY.indexOf(banners.home.aboutImgUrl) < 0) aboutSrc = banners.home.aboutImgUrl;
-                aboutSrc = U.safeUrl(aboutSrc, 'img');
-                if (aboutSrc) {
-                    if (aboutImgEl.getAttribute('src') !== aboutSrc) aboutImgEl.src = aboutSrc;
-                    aboutImgEl.style.display = 'block';
-                    aboutImgEl.style.opacity = '1';
-                } else {
-                    aboutImgEl.style.opacity = '0';
-                }
-
-                const t = Object.assign({}, defaultCMS.titles, src.titles || {});
-                const pick = (a, b, da, db) => en ? (t[a] || t[b] || defaultCMS.titles[da]) : (t[b] || defaultCMS.titles[db]);
-                U.sanitizeRichInto(document.getElementById('secPromoTitle'), pick('titlePromoEn', 'titlePromoId', 'titlePromoEn', 'titlePromoId'));
-                U.setText('secPromoSub', pick('subPromoEn', 'subPromoId', 'subPromoEn', 'subPromoId'));
-                U.sanitizeRichInto(document.getElementById('secStudioTitle'), pick('titleStudioEn', 'titleStudioId', 'titleStudioEn', 'titleStudioId'));
-                U.setText('secStudioSub', pick('subStudioEn', 'subStudioId', 'subStudioEn', 'subStudioId'));
-                U.sanitizeRichInto(document.getElementById('secVideoTitle'), pick('titleVideoEn', 'titleVideoId', 'titleVideoEn', 'titleVideoId'));
-                U.setText('secVideoSub', pick('subVideoEn', 'subVideoId', 'subVideoEn', 'subVideoId'));
-
-                // Studio (render ulang hanya bila datanya berubah agar gambar tidak berkedip)
-                const studiosList = (Array.isArray(src.studios) && src.studios.length > 0) ? src.studios : defaultCMS.studios;
-                const studioSig = JSON.stringify(studiosList);
-                if (studioSig !== lastStudioSig) {
-                    lastStudioSig = studioSig;
-                    document.getElementById('studioGrid').innerHTML = studiosList.map(s => '' +
-                        '<div class="slide-item-studio"><div class="card-item">' + cardImg(s.img, s.title) +
-                        '<div class="card-body"><div><h3>' + esc(s.title || 'Nama Studio') + '</h3><p>' + esc(s.desc || 'Deskripsi studio') + '</p></div></div>' +
-                        '</div></div>').join('');
-                    sliders.studioGrid.update();
-                }
-
-                // Promo
-                const promosList = (Array.isArray(src.promos) && src.promos.length > 0) ? src.promos : defaultCMS.promos;
-                const promoSig = JSON.stringify(promosList);
-                if (promoSig !== lastPromoSig) {
-                    lastPromoSig = promoSig;
-                    document.getElementById('promoGrid').innerHTML = promosList.map(p => '' +
-                        '<div class="slide-item-promo"><div class="card-item">' + cardImg(p.img, p.title) +
-                        '<div class="card-body"><div><span class="badge-tag">' + esc(p.badge || 'PROMO') + '</span><h3>' + esc(p.title || 'Judul Promo') + '</h3><p>' + esc(p.desc || 'Keterangan promo') + '</p></div></div>' +
-                        '</div></div>').join('');
-                    sliders.promoGrid.update();
-                }
-
-                // Video (tidak dimuat ulang saat ganti bahasa)
-                const videosList = (Array.isArray(src.videos) && src.videos.length > 0) ? src.videos : defaultCMS.videos;
-                const videoSig = JSON.stringify(videosList);
-                if (videoSig !== lastVideoSig) {
-                    lastVideoSig = videoSig;
-                    document.getElementById('videoGrid').innerHTML = videosList.map(v => '<div class="slide-item-video">' + videoHtml(v) + '</div>').join('');
-                    sliders.videoGrid.update();
-                }
-            }
-
-            OhSnapCloud.util.createPage(render);
+            });
         })();
+
+        function scrollSlider(elementId, direction) {
+            const container = document.getElementById(elementId);
+            const scrollAmount = 260 * direction;
+            container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+
+        function attachAutoPauseListeners() {
+            const allVideos = document.querySelectorAll('.auto-pause-video');
+            allVideos.forEach(vid => {
+                vid.onplay = () => {
+                    allVideos.forEach(otherVid => {
+                        if (otherVid !== vid) otherVid.pause();
+                    });
+                };
+            });
+        }
+
+        function applyCMS() {
+            if (!cms) return;
+            if (cms.colors) {
+                document.documentElement.style.setProperty('--primary', cms.colors.primary || '#ff1493');
+                document.documentElement.style.setProperty('--secondary', cms.colors.secondary || '#2b4c7e');
+                document.documentElement.style.setProperty('--bg-main', cms.colors.bg || '#fff0f5');
+                document.documentElement.style.setProperty('--footer-bg', cms.colors.footer || '#18171d');
+            }
+            if (cms.banners) {
+                if (cms.banners.home) {
+                    const b = cms.banners.home;
+                    document.getElementById('heroTitle').innerHTML = OhSnapCloud.safeTitleHtml(currentLang === 'en' ? (b.titleEn || b.titleId || '') : (b.titleId || ''));
+                    document.getElementById('heroSub').textContent = currentLang === 'en' ? (b.subEn || b.subId || '') : (b.subId || '');
+                    if (b.imgUrl && b.imgUrl.trim() !== '' && b.imgUrl !== 'images/hero-banner.jpg') {
+                        const targetBg = `url("${OhSnapCloud.safeUrl(b.imgUrl, '')}")`;
+                        if (document.getElementById('heroBannerBg').style.backgroundImage !== targetBg) {
+                            document.getElementById('heroBannerBg').style.backgroundImage = targetBg;
+                        }
+                    } else {
+                        document.getElementById('heroBannerBg').style.backgroundImage = 'none';
+                    }
+                }
+                if (cms.banners.about) {
+                    const ab = cms.banners.about;
+                    const aboutTitleEl = document.getElementById('aboutTitle');
+                    const aboutSubEl = document.getElementById('aboutSub');
+                    const aboutBtnEl = document.getElementById('aboutBtn');
+                    if (aboutTitleEl && (ab.titleId || ab.titleEn)) {
+                        aboutTitleEl.innerHTML = OhSnapCloud.safeTitleHtml(currentLang === 'en' ? (ab.titleEn || ab.titleId) : ab.titleId);
+                    }
+                    if (aboutSubEl && (ab.subId || ab.subEn)) {
+                        aboutSubEl.textContent = currentLang === 'en' ? (ab.subEn || ab.subId) : ab.subId;
+                    }
+                    if (aboutBtnEl && (ab.btnId || ab.btnEn)) {
+                        aboutBtnEl.textContent = currentLang === 'en' ? (ab.btnEn || ab.btnId) : ab.btnId;
+                    }
+                }
+                const aboutImgEl = document.getElementById('aboutImg');
+                if (aboutImgEl) {
+                    let aboutSrc = '';
+                    if (cms.banners.about && cms.banners.about.imgUrl && cms.banners.about.imgUrl.trim() !== '' && cms.banners.about.imgUrl !== 'images/about-img.jpg') {
+                        aboutSrc = cms.banners.about.imgUrl;
+                    } else if (cms.banners.home && cms.banners.home.aboutImgUrl && cms.banners.home.aboutImgUrl.trim() !== '' && cms.banners.home.aboutImgUrl !== 'images/about-img.jpg') {
+                        aboutSrc = cms.banners.home.aboutImgUrl;
+                    }
+                    if (aboutSrc) {
+                        if (aboutImgEl.getAttribute('src') !== aboutSrc) {
+                            aboutImgEl.src = OhSnapCloud.safeUrl(aboutSrc, '');
+                        }
+                        aboutImgEl.style.display = 'block';
+                        aboutImgEl.style.opacity = '1';
+                    } else {
+                        aboutImgEl.style.opacity = '0';
+                    }
+                }
+            }
+
+            const t = Object.assign({}, defaultCMS.titles, (cms && cms.titles) ? cms.titles : {});
+            const isEn = currentLang === 'en';
+            document.getElementById('secPromoTitle').innerHTML = OhSnapCloud.safeTitleHtml(isEn ? (t.titlePromoEn || t.titlePromoId || defaultCMS.titles.titlePromoEn) : (t.titlePromoId || defaultCMS.titles.titlePromoId));
+            document.getElementById('secPromoSub').textContent = isEn ? (t.subPromoEn || t.subPromoId || defaultCMS.titles.subPromoEn) : (t.subPromoId || defaultCMS.titles.subPromoId);
+            document.getElementById('secStudioTitle').innerHTML = OhSnapCloud.safeTitleHtml(isEn ? (t.titleStudioEn || t.titleStudioId || defaultCMS.titles.titleStudioEn) : (t.titleStudioId || defaultCMS.titles.titleStudioId));
+            document.getElementById('secStudioSub').textContent = isEn ? (t.subStudioEn || t.subStudioId || defaultCMS.titles.subStudioEn) : (t.subStudioId || defaultCMS.titles.subStudioId);
+            document.getElementById('secVideoTitle').innerHTML = OhSnapCloud.safeTitleHtml(isEn ? (t.titleVideoEn || t.titleVideoId || defaultCMS.titles.titleVideoEn) : (t.titleVideoId || defaultCMS.titles.titleVideoId));
+            document.getElementById('secVideoSub').textContent = isEn ? (t.subVideoEn || t.subVideoId || defaultCMS.titles.subVideoEn) : (t.subVideoId || defaultCMS.titles.subVideoId);
+
+            // Render Studios (hanya jika data studio berubah agar gambar tidak berkedip)
+            const studiosList = (cms.studios && cms.studios.length > 0) ? cms.studios : defaultCMS.studios;
+            const currentStudioSig = JSON.stringify(studiosList);
+            if (currentStudioSig !== lastStudioSig) {
+                lastStudioSig = currentStudioSig;
+                document.getElementById('studioGrid').innerHTML = studiosList.map(s => `
+                    <div class="slide-item-studio">
+                        <div class="card-item">
+                            ${OhSnapCloud.safeUrl(s.img, '') ? `<div style="width:100%; height:460px; overflow:hidden; background:#fff;"><img src="${escHtml(OhSnapCloud.safeUrl(s.img, ''))}" alt="${escHtml(s.title)}" style="width: 100%; height: 460px; object-fit: cover; display:block;" onerror="this.parentElement.outerHTML='<div class=\\'empty-portrait-box\\'></div>'"></div>` : `<div class="empty-portrait-box"></div>`}
+                            <div class="card-body">
+                                <div>
+                                    <h3>${escHtml(s.title || 'Nama Studio')}</h3>
+                                    <p>${escHtml(s.desc || 'Deskripsi studio')}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Render Promos (hanya jika data promo berubah)
+            const promosList = (cms.promos && cms.promos.length > 0) ? cms.promos : defaultCMS.promos;
+            const currentPromoSig = JSON.stringify(promosList);
+            if (currentPromoSig !== lastPromoSig) {
+                lastPromoSig = currentPromoSig;
+                document.getElementById('promoGrid').innerHTML = promosList.map(p => `
+                    <div class="slide-item-promo">
+                        <div class="card-item">
+                            ${OhSnapCloud.safeUrl(p.img, '') ? `<div style="width:100%; height:460px; overflow:hidden; background:#fff;"><img src="${escHtml(OhSnapCloud.safeUrl(p.img, ''))}" alt="${escHtml(p.title)}" style="width: 100%; height: 460px; object-fit: cover; display:block;" onerror="this.parentElement.outerHTML='<div class=\\'empty-portrait-box\\'></div>'"></div>` : `<div class="empty-portrait-box"></div>`}
+                            <div class="card-body">
+                                <div>
+                                    <span class="badge-tag">${escHtml(p.badge || 'PROMO')}</span>
+                                    <h3>${escHtml(p.title || 'Judul Promo')}</h3>
+                                    <p>${escHtml(p.desc || 'Keterangan promo')}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Render Videos (hanya jika data video berubah agar video tidak reload saat ganti bahasa)
+            const videosList = (cms.videos && cms.videos.length > 0) ? cms.videos : defaultCMS.videos;
+            const currentVideoSig = JSON.stringify(videosList);
+            if (currentVideoSig !== lastVideoSig) {
+                lastVideoSig = currentVideoSig;
+                document.getElementById('videoGrid').innerHTML = videosList.map(v => {
+                    let mediaContent = `<div class="empty-portrait-video"></div>`;
+                    let rawUrl = (v && v.url) ? String(v.url).trim() : '';
+
+                    if (rawUrl !== '' && rawUrl !== '#' && rawUrl !== 'images/video-1.mp4' && !rawUrl.startsWith('[')) {
+                        let cleanUrl = rawUrl.replace(/^#/, '').trim();
+                        const safeVidUrl = OhSnapCloud.safeUrl(cleanUrl, '');
+                        let parsedHost = '';
+                        if (safeVidUrl && /^https?:\/\//i.test(safeVidUrl)) {
+                            try { parsedHost = new URL(safeVidUrl).hostname.toLowerCase(); } catch (e) {}
+                        }
+                        const isTikTok = parsedHost === 'tiktok.com' || parsedHost.endsWith('.tiktok.com');
+                        const isIg = parsedHost === 'instagram.com' || parsedHost.endsWith('.instagram.com');
+
+                        if (safeVidUrl && (isTikTok || isIg)) {
+                            let platformName = isTikTok ? 'TikTok' : 'Instagram';
+                            mediaContent = `<div style="position:relative; width:100%; height:480px; border-radius:24px; border:2px solid #fbcfe8; overflow:hidden; background:#111; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                                <div style="position:absolute; inset:0; background:linear-gradient(135deg, #2b4c7e 0%, #ff1493 100%); opacity:0.85;"></div>
+                                <div style="position:relative; z-index:2; padding:20px; display:flex; flex-direction:column; align-items:center; gap:14px;">
+                                    <div style="width:60px; height:60px; background:var(--primary); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.5rem; box-shadow:0 6px 20px rgba(0,0,0,0.4);">▶</div>
+                                    <span style="color:#fff; font-weight:700; font-size:1.05rem; text-shadow:0 2px 8px rgba(0,0,0,0.8);">Tonton di ${platformName}</span>
+                                    <a href="${escHtml(safeVidUrl)}" target="_blank" rel="noopener noreferrer" style="background:#fff; color:var(--secondary); padding:10px 24px; border-radius:50px; font-weight:800; font-size:0.9rem; text-decoration:none; box-shadow:0 4px 15px rgba(0,0,0,0.3); transition:0.2s;">Buka Tautan →</a>
+                                </div>
+                            </div>`;
+                        } else if (safeVidUrl && (safeVidUrl.endsWith('.mp4') || safeVidUrl.startsWith('blob:') || safeVidUrl.startsWith('data:video') || /^https?:\/\//i.test(safeVidUrl))) {
+                            mediaContent = `<video class="auto-pause-video" src="${escHtml(safeVidUrl)}" preload="metadata" controls playsinline loop style="width: 100%; height: 480px; object-fit: cover; border-radius: 24px; border: 2px solid #fbcfe8; background:#000;" onerror="this.outerHTML='<div class=\\'empty-portrait-video\\'></div>'"></video>`;
+                        }
+                    }
+                    return `<div class="slide-item-video">${mediaContent}</div>`;
+                }).join('');
+
+                attachAutoPauseListeners();
+
+                setTimeout(async () => {
+                    const idbSlots = document.querySelectorAll('[data-idb-slot]');
+                    for (const slotEl of idbSlots) {
+                        const key = slotEl.getAttribute('data-idb-slot');
+                        const record = await getMediaFromIDB(key);
+                        if (record && (record instanceof Blob || record.buffer)) {
+                            const blob = (record instanceof Blob) ? record : new Blob([record.buffer], { type: record.type || 'video/mp4' });
+                            const blobUrl = URL.createObjectURL(blob);
+                            slotEl.outerHTML = `<video class="auto-pause-video" src="${blobUrl}" preload="metadata" controls playsinline loop style="width: 100%; height: 480px; object-fit: cover; border-radius: 24px; border: 2px solid #fbcfe8; background:#000;"></video>`;
+                        }
+                    }
+                    attachAutoPauseListeners();
+                }, 50);
+            }
+
+            if (cms && cms.footer) {
+                document.getElementById('fBrand').textContent = cms.footer.brand;
+                document.getElementById('fBranches').textContent = cms.footer.branches;
+                const ig = document.getElementById('fIg'); if(ig) { ig.textContent = cms.footer.igName; ig.href = OhSnapCloud.safeUrl(cms.footer.igUrl, '#'); }
+                const tt = document.getElementById('fTt'); if(tt) { tt.textContent = cms.footer.ttName; tt.href = OhSnapCloud.safeUrl(cms.footer.ttUrl, '#'); }
+                
+                document.getElementById('fCardTitle').textContent = currentLang === 'en' ? (cms.footer.cardTitleEn || 'Find nearby OH SNAP! Studio') : (cms.footer.cardTitleId || 'Find nearby OH SNAP! Studio');
+                document.getElementById('fCardDesc').textContent = currentLang === 'en' ? (cms.footer.cardDescEn || 'Find the nearest booth and studio in your city to capture your special moments today!') : (cms.footer.cardDescId || 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!');
+                document.getElementById('fCopy').textContent = cms.footer.copyright;
+            }
+
+            try { lastRenderedSignature = JSON.stringify(cms) + '_' + currentLang; } catch (e) {}
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            try { localStorage.setItem('siteLang', lang); } catch (e) {}
+            document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+            document.getElementById('btnID').classList.toggle('active', lang === 'id');
+            document.querySelectorAll('[data-en]').forEach(el => {
+                el.innerHTML = el.getAttribute('data-' + lang);
+            });
+            applyCMS();
+        }
+
+        if (hasInitialLocal) {
+            setLanguage(currentLang);
+        }
+
+        async function syncLatestCMS() {
+            try {
+                const localSaved = localStorage.getItem('ohsnap_cms_data');
+                if (localSaved) {
+                    const parsed = JSON.parse(localSaved);
+                    if (parsed && JSON.stringify(parsed) + '_' + currentLang !== lastRenderedSignature) {
+                        cms = parsed;
+                        setLanguage(currentLang);
+                    }
+                }
+            } catch (e) {}
+            try {
+                const cloudCms = await OhSnapCloud.pullIfNewer();
+                if (cloudCms && JSON.stringify(cloudCms) + '_' + currentLang !== lastRenderedSignature) {
+                    cms = cloudCms;
+                    setLanguage(currentLang);
+                } else if (!lastRenderedSignature) {
+                    setLanguage(currentLang);
+                }
+            } catch (e) {
+                if (!lastRenderedSignature) setLanguage(currentLang);
+            }
+            document.documentElement.classList.remove('awaiting-first-cloud');
+        }
+
+        window.addEventListener('storage', () => { syncLatestCMS(); });
+        window.addEventListener('focus', () => { syncLatestCMS(); });
+        syncLatestCMS();
     </script>
 </body>
 </html>
